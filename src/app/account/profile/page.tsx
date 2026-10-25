@@ -1,0 +1,214 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { User, Camera, ShieldAlert, Check, AlertCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { isDefectActive } from "@/config/defects.config";
+
+export default function ProfilePage() {
+  const { user, updateUser } = useAuth();
+
+  const [name, setName] = useState(user?.name || "John Customer");
+  const [role, setRole] = useState(user?.role || "customer");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    user?.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80"
+  );
+  const [fileMime, setFileMime] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // MED_15: User Profile File Upload MIME Validation
+  // Avatar file selector fails to restrict uploads to supported image formats and accepts .txt or .pdf files
+  const fileAcceptType = isDefectActive("MED_15_AVATAR_UPLOAD_MIME_UNRESTRICTED")
+    ? "*/*" // Bug: Unrestricted file types (.txt, .pdf, etc.)
+    : "image/png, image/jpeg, image/webp";
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileMime(file.type || "application/octet-stream");
+
+    // Convert to Base64 Data URL (safe for Vercel & local without file writes!)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setStatusMessage(null);
+
+    try {
+      // Build update payload
+      const payload: Record<string, any> = {
+        userId: user?.id || "demo-cust-1",
+        name,
+        avatarUrl: avatarPreview,
+        mimeType: fileMime,
+      };
+
+      // HARD_13: Profile Update Parameter Filtering
+      // Endpoint fails to filter restricted attributes, allowing users to pass elevated keys (e.g., role)
+      if (isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION")) {
+        payload.role = role; // Injected elevated attribute!
+      }
+
+      const res = await fetch("/api/users/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        updateUser({
+          name: data.user.name,
+          role: data.user.role,
+          avatarUrl: data.user.avatarUrl,
+        });
+        setStatusMessage({ text: data.message || "Profile updated successfully!", isError: false });
+      } else {
+        setStatusMessage({ text: data.error || "Failed to update profile", isError: true });
+      }
+    } catch {
+      setStatusMessage({ text: "An error occurred while saving profile.", isError: true });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8 text-amazon-text space-y-6">
+      <div className="border-b border-gray-300 pb-4">
+        <div className="text-xs text-gray-500 mb-1">
+          <Link href="/account" className="text-amazon-link hover:underline">
+            Your Account
+          </Link>{" "}
+          &rsaquo; <span className="text-amazon-orange font-bold">Profile & Avatar</span>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Your Public Profile</h1>
+        <p className="text-xs text-gray-500">
+          Personalize your Amazon identity across reviews, lists, and customer discussions.
+        </p>
+      </div>
+
+      {statusMessage && (
+        <div
+          className={`p-3 rounded text-xs flex items-center gap-2 ${
+            statusMessage.isError
+              ? "bg-red-50 text-red-700 border border-red-200"
+              : "bg-green-50 text-green-700 border border-green-200"
+          }`}
+        >
+          {statusMessage.isError ? <AlertCircle className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+          <span>{statusMessage.text}</span>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleProfileSubmit}
+        className="bg-white rounded-lg border border-gray-300 p-6 shadow-sm space-y-6"
+      >
+        {/* Avatar Upload */}
+        <div className="flex items-center gap-6">
+          <div className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-300 flex items-center justify-center shrink-0">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
+            ) : (
+              <User className="h-12 w-12 text-gray-400" />
+            )}
+          </div>
+
+          <div className="space-y-1 text-xs">
+            <label className="font-bold text-gray-800 block">Profile Picture</label>
+            <input
+              type="file"
+              accept={fileAcceptType} // MED_15: Accepts */* when active
+              onChange={handleFileChange}
+              className="text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-gray-300 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200 cursor-pointer"
+            />
+            {fileMime && (
+              <p className="text-[11px] text-gray-500 font-mono">
+                Detected MIME: <span className="font-bold">{fileMime}</span>
+              </p>
+            )}
+            {isDefectActive("MED_15_AVATAR_UPLOAD_MIME_UNRESTRICTED") && (
+              <p className="text-[11px] text-amber-700 italic">
+                (MED_15 flaw: selector accepts .txt and .pdf files without rejection)
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Display Name */}
+        <div className="space-y-1 text-xs">
+          <label className="font-bold text-gray-800 block">Public Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full sm:w-80 rounded border border-gray-400 px-3 py-1.5 text-xs focus:border-amazon-orange focus:outline-none"
+          />
+        </div>
+
+        {/* Email (Readonly) */}
+        <div className="space-y-1 text-xs">
+          <label className="font-bold text-gray-800 block">Email Address</label>
+          <input
+            type="email"
+            value={user?.email || "customer@amazon.local"}
+            disabled
+            className="w-full sm:w-80 rounded border border-gray-300 bg-gray-100 px-3 py-1.5 text-xs text-gray-500 cursor-not-allowed"
+          />
+        </div>
+
+        {/* HARD_13: Profile Update Parameter Filtering (Privilege Escalation) */}
+        <div className="border-t border-gray-200 pt-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="font-bold text-gray-800 text-xs">Account Role / Privileges</label>
+            {isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION") && (
+              <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <ShieldAlert className="h-3 w-3" /> HARD_13 Exploitable
+              </span>
+            )}
+          </div>
+
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full sm:w-80 rounded border border-gray-400 bg-white px-3 py-1.5 text-xs focus:border-amazon-orange focus:outline-none"
+          >
+            <option value="customer">customer (Standard Shopper)</option>
+            <option value="admin">admin (Full Elevated Privileges)</option>
+            <option value="moderator">moderator (Catalog Moderator)</option>
+          </select>
+          <p className="text-[11px] text-gray-500 leading-relaxed">
+            Standard customer accounts are restricted from modifying role attributes. Submitting with role &quot;admin&quot; triggers HARD_13 privilege escalation on backend.
+          </p>
+        </div>
+
+        <div className="border-t border-gray-200 pt-4 flex gap-3">
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="rounded bg-amazon-yellow hover:bg-amazon-yellowHover px-6 py-2 text-xs font-bold text-amazon-text shadow-sm transition"
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
+          <Link
+            href="/account"
+            className="rounded border border-gray-300 hover:bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-700"
+          >
+            Cancel
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
+}
