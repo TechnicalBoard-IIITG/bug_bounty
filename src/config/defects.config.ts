@@ -60,9 +60,10 @@ export const DEFECTS = {
   HARD_15_TRUNCATION_TAX_EVASION: true,
   HARD_16_MAX_QTY_RACE_CONDITION: true,
 
-  // --- Treasure Bugs (1 - 2) ---
+  // --- Treasure Bugs (1 - 3) ---
   TB_01_BASE64_CONSOLE_LEAK: true,
   TB_02_LOCALSTORAGE_ADMIN_ESCALATION: true,
+  TB_03_INSPECT_TOOL_DOM_FLAG: true,
 } as const;
 
 export type DefectId = keyof typeof DEFECTS;
