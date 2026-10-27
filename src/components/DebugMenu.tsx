@@ -102,44 +102,17 @@ export const DebugMenu: React.FC = () => {
               </p>
             </div>
 
-            {/* Defect Toggles Table */}
-            <div className="mt-6 flex-1">
-              <div className="flex items-center justify-between mb-3">
+                        {/* Administrative Diagnostics Info */}
+            <div className="mt-6 flex-1 space-y-4">
+              <div className="p-4 rounded bg-gray-900 border border-gray-800 space-y-2">
                 <h4 className="text-xs font-mono font-bold text-gray-300 uppercase">
-                  Active Seeded Defects ({Object.keys(DEFECTS).length} Total)
+                  Diagnostics Engine Status
                 </h4>
-                <button
-                  onClick={handleResetAllDefects}
-                  className="flex items-center gap-1 text-[11px] font-mono text-gray-400 hover:text-white underline"
-                >
-                  <RefreshCw className="h-3 w-3" /> Reset Defaults
-                </button>
-              </div>
-
-              <div className="space-y-1.5 font-mono text-xs max-h-[60vh] overflow-y-auto pr-2">
-                {Object.keys(DEFECTS).map((defectKey) => {
-                  const isActive = defectToggles[defectKey] ?? true;
-                  return (
-                    <div
-                      key={defectKey}
-                      className="flex items-center justify-between p-2 rounded bg-gray-900 border border-gray-800 hover:border-gray-700"
-                    >
-                      <span className="text-[11px] truncate max-w-[320px]">
-                        {defectKey}
-                      </span>
-                      <button
-                        onClick={() => handleToggleDefect(defectKey)}
-                        className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
-                          isActive
-                            ? "bg-red-500/20 text-red-400 border border-red-500/40"
-                            : "bg-gray-800 text-gray-400"
-                        }`}
-                      >
-                        {isActive ? "ACTIVE (BUG)" : "RESOLVED"}
-                      </button>
-                    </div>
-                  );
-                })}
+                <div className="text-[12px] font-mono text-green-400">● Diagnostics Service: ONLINE</div>
+                <div className="text-[12px] font-mono text-yellow-400">● Access Level: ROOT / ADMINISTRATOR</div>
+                <div className="text-[11px] font-mono text-gray-400">
+                  Target: Entropy 2K26 Mock Store Subsystem
+                </div>
               </div>
             </div>
           </div>

@@ -319,7 +319,7 @@ export const Header: React.FC = () => {
 
                 {/* Direct link to admin console for Hard 3 test */}
                 <Link href="/admin/users" className="block text-gray-500 hover:text-amazon-orange text-[11px] pt-1">
-                  Admin User Console (Hard 3)
+                  Admin User Console
                 </Link>
 
                 {user && (

@@ -65,12 +65,7 @@ export default function AdminUsersPage() {
           </p>
         </div>
 
-        {isAccessControlBroken && user?.role !== "admin" && (
-          <div className="bg-red-50 border border-red-300 text-red-800 text-xs px-3 py-1.5 rounded flex items-center gap-1.5 font-bold">
-            <ShieldAlert className="h-4 w-4 shrink-0" />
-            <span>HARD_03 Active: Rendered for role &quot;{user?.role || "anonymous"}&quot; without auth check</span>
-          </div>
-        )}
+        
       </div>
 
       {/* Metrics Banner */}

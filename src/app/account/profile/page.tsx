@@ -137,11 +137,7 @@ export default function ProfilePage() {
                 Detected MIME: <span className="font-bold">{fileMime}</span>
               </p>
             )}
-            {isDefectActive("MED_15_AVATAR_UPLOAD_MIME_UNRESTRICTED") && (
-              <p className="text-[11px] text-amber-700 italic">
-                (MED_15 flaw: selector accepts .txt and .pdf files without rejection)
-              </p>
-            )}
+            
           </div>
         </div>
 
@@ -172,11 +168,7 @@ export default function ProfilePage() {
         <div className="border-t border-gray-200 pt-4 space-y-2">
           <div className="flex items-center gap-2">
             <label className="font-bold text-gray-800 text-xs">Account Role / Privileges</label>
-            {isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION") && (
-              <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded flex items-center gap-1">
-                <ShieldAlert className="h-3 w-3" /> HARD_13 Exploitable
-              </span>
-            )}
+            
           </div>
 
           <select
@@ -189,7 +181,7 @@ export default function ProfilePage() {
             <option value="moderator">moderator (Catalog Moderator)</option>
           </select>
           <p className="text-[11px] text-gray-500 leading-relaxed">
-            Standard customer accounts are restricted from modifying role attributes. Submitting with role &quot;admin&quot; triggers HARD_13 privilege escalation on backend.
+            Standard account permissions and role configuration.
           </p>
         </div>
 

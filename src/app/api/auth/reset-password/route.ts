@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Password has been successfully updated! (HARD_05 leaves token reusable)",
+      message: "Password has been successfully updated!",
     });
   } catch (error) {
     console.error("Reset password error:", error);

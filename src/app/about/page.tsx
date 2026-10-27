@@ -3,20 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { Building2, Globe, Heart, Users } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
 
 export default function AboutPage() {
-  const isLogoBugActive = isDefectActive("EASY_01_NAVBAR_LOGO_ROUTING");
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 text-amazon-text space-y-8">
-      {isLogoBugActive && (
-        <div className="bg-amber-50 border border-amber-300 text-amber-900 p-4 rounded text-xs font-semibold">
-          Notice: You reached the static <span className="font-mono font-bold">/about</span> page.
-          If you clicked the brand logo in the header, this demonstrates the <strong>EASY_01</strong> routing defect.
-        </div>
-      )}
-
       <div className="border-b border-gray-300 pb-6 text-center space-y-2">
         <h1 className="text-3xl font-extrabold text-gray-900">About Amazon</h1>
         <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">

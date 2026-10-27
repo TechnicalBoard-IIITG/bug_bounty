@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Successfully signed out (HARD_04 maintains token validity if active)",
+      message: "Successfully signed out",
     });
   } catch (error) {
     console.error("Logout error:", error);

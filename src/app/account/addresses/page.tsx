@@ -241,7 +241,7 @@ export default function AddressesPage() {
                 <button
                   onClick={() => handleDeleteAddress(index)}
                   className="text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
-                  title={index === 1 ? "Clicking delete here targets address #1 due to MED_14" : "Delete"}
+                  title="Delete"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Delete</span>

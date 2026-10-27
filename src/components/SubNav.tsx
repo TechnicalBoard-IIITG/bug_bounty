@@ -148,14 +148,14 @@ export const SubNav: React.FC = () => {
                     onClick={() => setIsDrawerOpen(false)}
                     className="block py-2 px-2 hover:bg-gray-100 rounded text-gray-700"
                   >
-                    Customer Service FAQ (Easy 12)
+                    Customer Service FAQ
                   </Link>
                   <Link
                     href="/contact"
                     onClick={() => setIsDrawerOpen(false)}
                     className="block py-2 px-2 hover:bg-gray-100 rounded text-gray-700"
                   >
-                    Contact Us (Easy 11)
+                    Contact Us
                   </Link>
                 </div>
               </div>

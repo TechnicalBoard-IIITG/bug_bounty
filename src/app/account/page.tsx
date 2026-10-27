@@ -41,7 +41,7 @@ export default function AccountPage() {
     },
     {
       title: "Admin Console",
-      desc: "Back-office administration and system metrics (Hard 3)",
+      desc: "Back-office administration and system metrics",
       icon: ShieldCheck,
       link: "/admin/users",
     },

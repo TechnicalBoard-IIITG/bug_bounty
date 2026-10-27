@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         success: true,
         productId,
         quantity: numQty,
-        message: "Cart item quantity updated successfully (negative values accepted per HARD_11)",
+        message: "Cart item quantity updated successfully",
       });
     }
 

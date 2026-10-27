@@ -54,7 +54,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `Order #${id} status changed from "${currentStatus}" to "Cancelled" (HARD_10 defect active).`,
+      message: `Order #${id} status changed from "${currentStatus}" to "Cancelled".`,
       order: {
         id,
         orderNumber: id,
