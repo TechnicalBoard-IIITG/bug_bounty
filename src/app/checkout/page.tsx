@@ -18,7 +18,7 @@ import { isDefectActive } from "@/config/defects.config";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, accountId } = useAuth();
   const items = useCartStore((s) => s.items);
   const currency = useCartStore((s) => s.currency);
   const getSubtotal = useCartStore((s) => s.getSubtotal);
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
       // HARD_01: Order Payload Pricing Authority
       // Sends unitPrice in payload which backend accepts if HARD_01 is active
       const payload = {
-        userId: user?.id || "guest",
+        userId: user?.id || accountId || "guest",
         items: items.map((i) => ({
           productId: i.productId,
           title: i.title,
@@ -146,7 +146,7 @@ export default function CheckoutPage() {
 
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-account-id": accountId || user?.id || "" },
         body: JSON.stringify(payload),
       });
 

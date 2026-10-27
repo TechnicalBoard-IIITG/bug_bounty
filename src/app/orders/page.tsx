@@ -2,63 +2,32 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, XCircle, ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import { Package, XCircle, CheckCircle2, Clock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, accountId } = useAuth();
   const currency = useCartStore((s) => s.currency);
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Hard 10 cancellation status message
+  // Cancellation status message
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
 
   const fetchOrders = () => {
     setIsLoading(true);
-    fetch(`/api/orders?userId=${user?.id || ""}`)
+    const targetAccountId = accountId || user?.id || "";
+    fetch(`/api/orders?accountId=${targetAccountId}`, {
+      headers: {
+        "x-account-id": targetAccountId,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
-        if (data.orders && data.orders.length > 0) {
+        if (data.orders) {
           setOrders(data.orders);
-        } else {
-          // Pre-seeded demo orders (targets for Hard 2 and Hard 10)
-          setOrders([
-            {
-              id: "112-8492041-5928310",
-              orderNumber: "112-8492041-5928310",
-              status: "Delivered", // Target for HARD_10
-              total: 375.84,
-              createdAt: "2026-10-14T10:30:00.000Z",
-              items: [
-                {
-                  id: "it-hist-1",
-                  title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
-                  unitPrice: 348.0,
-                  quantity: 1,
-                  imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-                },
-              ],
-            },
-            {
-              id: "112-1049281-4920194",
-              orderNumber: "112-1049281-4920194",
-              status: "Processing",
-              total: 89.99,
-              createdAt: "2026-10-16T08:15:00.000Z",
-              items: [
-                {
-                  id: "it-hist-2",
-                  title: "Ninja AF101 4-Quart Digital Air Fryer",
-                  unitPrice: 89.99,
-                  quantity: 1,
-                  imageUrl: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=800&q=80",
-                },
-              ],
-            },
-          ]);
         }
       })
       .catch(() => {
@@ -69,7 +38,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [user]);
+  }, [user, accountId]);
 
   // HARD_10: Order State Transition Validation
   // Allows cancellation of Delivered orders
@@ -80,8 +49,12 @@ export default function OrdersPage() {
     if (!confirmCancel) return;
 
     try {
+      const targetAccountId = accountId || user?.id || "";
       const res = await fetch(`/api/orders/${orderId}/cancel`, {
         method: "POST",
+        headers: {
+          "x-account-id": targetAccountId,
+        },
       });
       const data = await res.json();
 
@@ -233,7 +206,7 @@ export default function OrdersPage() {
                       onClick={() => handleCancelOrder(ord.orderNumber || ord.id, ord.status)}
                       className="rounded border border-red-300 text-red-700 hover:bg-red-50 px-4 py-1.5 text-xs font-semibold shadow-sm transition"
                     >
-                      Cancel Order {ord.status === "Delivered" && "(HARD_10 flaw)"}
+                      Cancel Order
                     </button>
                   )}
                   <Link

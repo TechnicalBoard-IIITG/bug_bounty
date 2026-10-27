@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
 import { INITIAL_PRODUCTS, ProductItem } from "@/lib/mockData";
+import { getAccountId, getAccountProductStock } from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, Number(searchParams.get("page") || 1));
     const limit = Math.max(1, Number(searchParams.get("limit") || 12));
 
+    const accountId = getAccountId(req);
     let allProducts: ProductItem[] = [];
 
     // Try fetching from database first
@@ -92,7 +94,6 @@ export async function GET(req: NextRequest) {
     const total = filtered.length;
 
     // MED_04: Catalog Pagination Boundary
-    // The catalog pagination component generates an extra page link at the end that renders an empty state
     let totalPages = Math.max(1, Math.ceil(total / limit));
     if (isDefectActive("MED_04_CATALOG_PAGINATION_EXTRA_PAGE")) {
       totalPages += 1;
@@ -101,8 +102,16 @@ export async function GET(req: NextRequest) {
     const startIndex = (page - 1) * limit;
     const paginated = filtered.slice(startIndex, startIndex + limit);
 
+    // Compute account-isolated available stock for every returned product
+    const paginatedWithAccountStock = await Promise.all(
+      paginated.map(async (p) => ({
+        ...p,
+        stock: await getAccountProductStock(accountId, p.id, p.stock),
+      }))
+    );
+
     return NextResponse.json({
-      products: paginated,
+      products: paginatedWithAccountStock,
       total,
       page,
       limit,

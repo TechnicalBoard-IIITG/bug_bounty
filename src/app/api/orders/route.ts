@@ -2,17 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
 import { INITIAL_PRODUCTS } from "@/lib/mockData";
+import {
+  getAccountId,
+  getAccountOrders,
+  addAccountOrder,
+} from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, discount = 0, tax = 0, shippingFee = 0, userId = "guest" } = body;
+    const { items, discount = 0, tax = 0, shippingFee = 0, userId } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
+
+    // Determine account-isolated ID
+    const accountId = getAccountId(req, userId);
 
     let calculatedSubtotal = 0;
     const orderItemsToCreate = [];
@@ -21,9 +29,7 @@ export async function POST(req: NextRequest) {
       let finalUnitPrice = item.unitPrice ?? item.price ?? 0;
 
       // HARD_01: Order Payload Pricing Authority
-      // When defect is active: Server blindly trusts user-provided unitPrice from request body
       if (!isDefectActive("HARD_01_ORDER_PAYLOAD_PRICING_AUTHORITY")) {
-        // Secure behavior: Lookup price from authoritative database
         try {
           const dbProd = await prisma.product.findUnique({ where: { id: item.productId } });
           if (dbProd) {
@@ -56,7 +62,7 @@ export async function POST(req: NextRequest) {
       const order = await prisma.order.create({
         data: {
           orderNumber,
-          userId: userId || "guest",
+          userId: accountId,
           subtotal: calculatedSubtotal,
           discount: Number(discount) || 0,
           tax: Number(tax) || 0,
@@ -72,13 +78,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      addAccountOrder(accountId, order);
       return NextResponse.json({ success: true, order });
     } catch {
       // In-memory fallback if database connection is pending
       const mockOrder = {
         id: `order-${Date.now()}`,
         orderNumber,
-        userId: userId || "guest",
+        userId: accountId,
         subtotal: calculatedSubtotal,
         discount: Number(discount) || 0,
         tax: Number(tax) || 0,
@@ -89,6 +96,7 @@ export async function POST(req: NextRequest) {
         items: orderItemsToCreate.map((oi, idx) => ({ ...oi, id: `item-${idx}` })),
       };
 
+      addAccountOrder(accountId, mockOrder);
       return NextResponse.json({ success: true, order: mockOrder });
     }
   } catch (error) {
@@ -99,19 +107,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
-
-    try {
-      const orders = await prisma.order.findMany({
-        where: userId ? { userId } : undefined,
-        include: { items: true },
-        orderBy: { createdAt: "desc" },
-      });
-      return NextResponse.json({ orders });
-    } catch {
-      return NextResponse.json({ orders: [] });
-    }
+    const accountId = getAccountId(req);
+    const orders = await getAccountOrders(accountId);
+    return NextResponse.json({ orders });
   } catch (error) {
     console.error("Orders GET error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

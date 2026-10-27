@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { getAccountId, getAccountOrders, cancelAccountOrder } from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ export async function POST(
 ) {
   try {
     const { id } = params;
+    const accountId = getAccountId(req);
 
     let order = null;
     try {
@@ -17,9 +19,15 @@ export async function POST(
         where: {
           OR: [{ id }, { orderNumber: id }],
         },
+        include: { items: true },
       });
     } catch {
-      // Fallback
+      // In-memory fallback
+    }
+
+    if (!order) {
+      const mockOrders = await getAccountOrders(accountId);
+      order = mockOrders.find((o) => o.id === id || o.orderNumber === id);
     }
 
     const currentStatus = order?.status || "Delivered";
@@ -36,28 +44,15 @@ export async function POST(
       }
     }
 
-    try {
-      if (order) {
-        const updated = await prisma.order.update({
-          where: { id: order.id },
-          data: { status: "Cancelled" },
-        });
-        return NextResponse.json({
-          success: true,
-          message: `Order #${updated.orderNumber} status changed from "${currentStatus}" to "Cancelled".`,
-          order: updated,
-        });
-      }
-    } catch {
-      // Fallback
-    }
+    // Cancel order in DB or in-memory mock store
+    const cancelledOrder = await cancelAccountOrder(accountId, order?.id || id);
 
     return NextResponse.json({
       success: true,
-      message: `Order #${id} status changed from "${currentStatus}" to "Cancelled".`,
-      order: {
+      message: `Order #${order?.orderNumber || id} status changed from "${currentStatus}" to "Cancelled".`,
+      order: cancelledOrder || {
         id,
-        orderNumber: id,
+        orderNumber: order?.orderNumber || id,
         status: "Cancelled",
         previousStatus: currentStatus,
       },
