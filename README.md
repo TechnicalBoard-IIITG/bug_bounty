@@ -77,12 +77,16 @@ git push -u origin main
 
 ---
 
-## 🔑 Demo Credentials
+## 🔑 Team Accounts & Multi-Laptop Authentication
 
-| Role | Email | Password | Privileges |
-|:---|:---|:---|:---|
-| **Customer** | `customer@amazon.local` | `password123` | Standard shopper, order history, saved addresses |
-| **Admin** | `admin@amazon.local` | `admin123` | Back-office user console, system metrics |
+> **CRITICAL RULE FOR PARTICIPATING TEAMS:**  
+> - **Dedicated Team Accounts:** To keep your order history, shopping cart, and addresses private and isolated from competing teams, **each team must register their own dedicated account** at `/register` (e.g. using your team name or registered team email).  
+> - **Multi-Device Support:** All 3 team members should log into this **same team account** across their 3 laptops.  
+> - **Data Isolation:** Orders and addresses are strictly scoped per team account.  
+> - **Catalog Inventory:** Product stock is non-depleting across teams; every team always sees the full catalog inventory available.  
+> - **Shared Community Data:** Only customer product reviews and comments are shared across all teams.  
+> - **Do NOT use the legacy demo account** (`customer@amazon.local`) during the live competition to prevent sharing orders with other teams.  
+> - **Admin Testing:** For `HARD-03` (Administrative Route Access), teams test direct unauthorized access to `/admin/users` as standard shoppers.
 
 ---
 
