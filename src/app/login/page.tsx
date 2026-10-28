@@ -135,11 +135,7 @@ function LoginFormContent() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {isEasy10Active && (
-              <p className="text-[10px] text-gray-400 mt-1">
-                (EASY_10: defaults to visible text; click eye to mask)
-              </p>
-            )}
+
           </div>
 
           <button

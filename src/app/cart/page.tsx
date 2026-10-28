@@ -283,7 +283,7 @@ export default function CartPage() {
                       <span className="font-bold text-amber-900">{c.code}</span>
                       {c.appliedCount > 1 && (
                         <span className="ml-1 text-[10px] font-bold text-red-600 bg-red-100 px-1 rounded">
-                          x{c.appliedCount} compounded (MED_07)
+                          x{c.appliedCount} 
                         </span>
                       )}
                     </div>

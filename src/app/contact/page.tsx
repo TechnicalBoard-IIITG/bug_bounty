@@ -53,7 +53,7 @@ export default function ContactPage() {
           <h3 className="text-base font-bold text-gray-900">Message Dispatched!</h3>
           <p className="text-xs text-gray-600">
             Thank you, {name}. A customer service representative will respond shortly
-            {email ? ` at ${email}` : " (Email bypassed per EASY_11)"}.
+            {email ? ` at ${email}` : ""}.
           </p>
           <button
             onClick={() => {
@@ -101,11 +101,7 @@ export default function ContactPage() {
               placeholder="Email address"
               className="w-full rounded border border-gray-400 px-3 py-1.5 focus:border-amazon-orange focus:outline-none"
             />
-            {isDefectActive("EASY_11_CONTACT_EMAIL_VALIDATION_BYPASS") && (
-              <p className="text-[10px] text-amber-700 italic mt-0.5">
-                (EASY_11: Leaving email blank bypasses validation on submission)
-              </p>
-            )}
+
           </div>
 
           <div>

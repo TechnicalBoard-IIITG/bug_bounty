@@ -39,7 +39,7 @@ function ResetPasswordContent() {
         const nextCount = useCount + 1;
         setUseCount(nextCount);
         setStatusMessage({
-          text: `Success! Password changed. This token has been used ${nextCount} time(s). (HARD_05 allows infinite re-use).`,
+          text: "Success! Your password has been changed successfully.",
           isError: false,
         });
       } else {
@@ -66,12 +66,7 @@ function ResetPasswordContent() {
           We&apos;ll ask for this password whenever you sign in.
         </p>
 
-        {isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE") && (
-          <div className="bg-red-50 border border-red-300 text-red-800 p-2.5 rounded text-[11px] font-semibold flex items-center gap-1.5">
-            <ShieldAlert className="h-4 w-4 shrink-0" />
-            <span>HARD_05 Active: Recovery token is never invalidated upon password change.</span>
-          </div>
-        )}
+
 
         {statusMessage && (
           <div

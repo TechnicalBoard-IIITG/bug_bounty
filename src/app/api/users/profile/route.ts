@@ -56,7 +56,7 @@ export async function PUT(req: NextRequest) {
         success: true,
         user: updatedUser,
         message: updateData.role
-          ? `Profile updated. Role escalated to "${updateData.role}" (HARD_13)!`
+          ? `Profile updated. Role updated to "${updateData.role}".`
           : "Profile updated successfully",
       });
     } catch {
@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest) {
           avatarUrl: avatarUrl || null,
         },
         message: updateData.role
-          ? `Profile updated. Role escalated to "${updateData.role}" (HARD_13)!`
+          ? `Profile updated. Role updated to "${updateData.role}".`
           : "Profile updated successfully",
       });
     }

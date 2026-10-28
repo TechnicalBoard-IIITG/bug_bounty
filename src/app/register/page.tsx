@@ -118,11 +118,7 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full rounded border border-gray-400 px-3 py-1.5 text-xs focus:border-amazon-orange focus:outline-none"
             />
-            {isDefectActive("MED_16_REGISTRATION_PASSWORD_MATCH_BYPASS") && (
-              <p className="text-[10px] text-amber-700 italic mt-1">
-                (MED_16 flaw: account provisions even if passwords don&apos;t match)
-              </p>
-            )}
+
           </div>
 
           <button

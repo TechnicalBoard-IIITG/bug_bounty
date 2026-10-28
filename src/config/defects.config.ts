@@ -60,9 +60,8 @@ export const DEFECTS = {
   HARD_15_TRUNCATION_TAX_EVASION: true,
   HARD_16_MAX_QTY_RACE_CONDITION: true,
 
-  // --- Treasure Bugs (1 - 3) ---
+  // --- Active Treasure Flags (2 Total) ---
   TB_01_BASE64_CONSOLE_LEAK: true,
-  TB_02_LOCALSTORAGE_ADMIN_ESCALATION: true,
   TB_03_INSPECT_TOOL_DOM_FLAG: true,
 } as const;
 
@@ -71,7 +70,7 @@ export type DefectId = keyof typeof DEFECTS;
 /**
  * Check if a defect is active.
  * Defaults to true per the defect dictionary, but allows client-side runtime override via localStorage
- * if the judging panel or admin tests toggles.
+ * if the judging panel tests toggles.
  */
 export function isDefectActive(id: DefectId): boolean {
   if (typeof window !== "undefined") {

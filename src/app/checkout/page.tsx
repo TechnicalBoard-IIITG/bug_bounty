@@ -293,11 +293,7 @@ export default function CheckoutPage() {
                   >
                     Use this address
                   </button>
-                  {isDefectActive("MED_09_AUTOFILL_CONTINUE_BUTTON_DISABLED") && !hasUserTyped && (
-                    <span className="ml-3 text-[11px] text-gray-500 italic">
-                      (MED_09 active: Type any key into a field to activate button)
-                    </span>
-                  )}
+
                 </div>
               </div>
             ) : (

@@ -4,7 +4,6 @@ import { Header } from "@/components/Header";
 import { SubNav } from "@/components/SubNav";
 import { Footer } from "@/components/Footer";
 import { CookieBanner } from "@/components/CookieBanner";
-import { DebugMenu } from "@/components/DebugMenu";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
@@ -26,7 +25,6 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <CookieBanner />
-          <DebugMenu />
         </AuthProvider>
       </body>
     </html>
