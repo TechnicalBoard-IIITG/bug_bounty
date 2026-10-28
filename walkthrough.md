@@ -55,3 +55,27 @@ All 55 regular bugs + 2 treasure bugs are active by default in `src/config/defec
 - Zero TypeScript errors across all 69 files.
 - All dynamic and static routes compiled and optimized.
 - Git repository initialized and initial commit created: `c6fa0c6`.
+
+
+---
+
+## 👥 Team Accounts, Multi-Device Isolation & Shared Reviews
+
+To guarantee fairness across all competing teams in the Entropy 2K26 Bug Bounty:
+
+1. **Dedicated Account per Team:**
+   - Each participating team must register their own dedicated account at `/register` (e.g. using their official team name or registered team email).
+   - **No Two Teams Should Share An Account:** Competing teams must not use the same credentials.
+   - **All 3 Team Members** sign into this single team account on their 3 respective laptops.
+
+2. **Order & Address Privacy:**
+   - Orders placed by a team are tied strictly to their `userId`.
+   - Competing teams cannot view or alter each other's orders in `/orders`.
+   - Unauthenticated sessions on `/orders` only see the baseline sample order (`#112-8492041-5928310`) for defect testing without exposing other teams' data.
+
+3. **Global Non-Depleting Inventory:**
+   - Catalog inventory does not decrease globally in the database when orders are placed.
+   - Every team always sees full baseline product stock, preventing any team from starving product inventory for others.
+
+4. **Shared Community Feedback:**
+   - Customer product reviews and comments submitted at `/api/reviews` are shared across all teams to foster an authentic live marketplace feel and allow community testing of `HARD-07` (Stored XSS).
