@@ -36,7 +36,7 @@ export default function HomePage() {
       {/* Hero Carousel */}
       <HeroCarousel />
 
-      <div className="max-w-7xl mx-auto px-4 -mt-16 sm:-mt-28 md:-mt-44 relative z-20 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 -mt-16 sm:-mt-24 md:-mt-36 relative z-20 space-y-8">
         {/* 4-Card Category Promo Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Electronics */}

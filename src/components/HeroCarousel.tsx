@@ -58,13 +58,13 @@ export const HeroCarousel: React.FC = () => {
     <div className="relative w-full overflow-hidden select-none">
       {/* Slides Container */}
       <div
-        className="flex transition-transform duration-500 ease-out h-[260px] sm:h-[350px] md:h-[450px]"
+        className="flex transition-transform duration-500 ease-out h-[340px] sm:h-[440px] md:h-[520px]"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
         {SLIDES.map((slide) => (
           <div
             key={slide.id}
-            className="w-full shrink-0 relative h-full flex items-center"
+            className="w-full shrink-0 relative h-full flex items-start pt-8 sm:pt-12 md:pt-16"
           >
             <div className="absolute inset-0">
               <img
@@ -75,7 +75,7 @@ export const HeroCarousel: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-amazon-bg via-transparent to-black/40" />
             </div>
 
-            <div className="relative max-w-7xl mx-auto px-6 sm:px-12 w-full text-white pb-20">
+            <div className="relative max-w-7xl mx-auto px-6 sm:px-12 w-full text-white">
               <span className="inline-block bg-amazon-orange text-amazon-text font-black text-xs px-2.5 py-1 rounded mb-3 tracking-wide uppercase">
                 Featured Deal
               </span>
@@ -98,9 +98,10 @@ export const HeroCarousel: React.FC = () => {
         ))}
       </div>
 
+      {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 top-1/3 -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10"
+        className="absolute left-2 top-[30%] -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10 cursor-pointer"
         aria-label="Previous Slide"
       >
         <ChevronLeft className="h-8 w-8" />
@@ -108,24 +109,11 @@ export const HeroCarousel: React.FC = () => {
 
       <button
         onClick={nextSlide}
-        className="absolute right-2 top-1/3 -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10"
+        className="absolute right-2 top-[30%] -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10 cursor-pointer"
         aria-label="Next Slide"
       >
         <ChevronRight className="h-8 w-8" />
       </button>
-
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-        {SLIDES.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            className={`h-2.5 rounded-full transition-all ${
-              currentSlide === idx ? "w-8 bg-amazon-orange" : "w-2.5 bg-white/60"
-            }`}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
-      </div>
     </div>
   );
 };
