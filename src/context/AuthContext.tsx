@@ -18,7 +18,6 @@ export interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   token: string | null;
-  accountId: string;
   isLoading: boolean;
   login: (token: string, userData: UserProfile) => void;
   logout: () => Promise<void>;
@@ -28,7 +27,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  accountId: "default_account",
   isLoading: true,
   login: () => {},
   logout: async () => {},
@@ -38,7 +36,6 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [accountId, setAccountId] = useState<string>("default_account");
   const [isLoading, setIsLoading] = useState(true);
   const mergeGuestCart = useCartStore((s) => s.mergeGuestCart);
 
@@ -47,22 +44,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const storedToken = localStorage.getItem("amazon_auth_token");
       const storedUser = localStorage.getItem("amazon_user_profile");
-      let storedAccountId = localStorage.getItem("amazon_account_id");
 
       if (storedToken && storedUser) {
-        const parsed = JSON.parse(storedUser);
         setToken(storedToken);
-        setUser(parsed);
-        storedAccountId = parsed.id;
+        setUser(JSON.parse(storedUser));
       }
-
-      if (!storedAccountId) {
-        storedAccountId = `team_${Math.random().toString(36).slice(2, 8)}_${Date.now().toString(36).slice(-4)}`;
-      }
-
-      localStorage.setItem("amazon_account_id", storedAccountId);
-      document.cookie = `amazon_account_id=${storedAccountId}; path=/; max-age=31536000; SameSite=Lax`;
-      setAccountId(storedAccountId);
     } catch (e) {
       console.error("Auth rehydration error:", e);
     } finally {
@@ -73,11 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (newToken: string, userData: UserProfile) => {
     setToken(newToken);
     setUser(userData);
-    setAccountId(userData.id);
     localStorage.setItem("amazon_auth_token", newToken);
     localStorage.setItem("amazon_user_profile", JSON.stringify(userData));
-    localStorage.setItem("amazon_account_id", userData.id);
-    document.cookie = `amazon_account_id=${userData.id}; path=/; max-age=31536000; SameSite=Lax`;
 
     // Seed cached payment and address data for HARD_12 test
     localStorage.setItem(
@@ -123,16 +106,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUser(null);
     setToken(null);
-    const newGuestAccountId = `team_${Math.random().toString(36).slice(2, 8)}_${Date.now().toString(36).slice(-4)}`;
-    setAccountId(newGuestAccountId);
-    localStorage.setItem("amazon_account_id", newGuestAccountId);
-    document.cookie = `amazon_account_id=${newGuestAccountId}; path=/; max-age=31536000; SameSite=Lax`;
 
     // HARD_12: Session Storage Cleanup on Sign-Out
     // When defect is active, logging out fails to clear client-side localStorage,
     // retaining cached user profile data containing masked card and address info
     if (isDefectActive("HARD_12_SESSION_STORAGE_RETAINED_ON_LOGOUT")) {
+      // Intentionally do NOT clear amazon_user_profile or amazon_cached_checkout_data
       localStorage.removeItem("amazon_auth_token");
+      // Notice: amazon_cached_checkout_data remains in localStorage!
     } else {
       localStorage.removeItem("amazon_auth_token");
       localStorage.removeItem("amazon_user_profile");
@@ -148,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, accountId, isLoading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

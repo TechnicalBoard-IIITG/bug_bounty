@@ -1,18 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import {
-  getAccountId,
-  getAccountAddresses,
-  addAccountAddress,
-} from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const accountId = getAccountId(req);
-    const addresses = await getAccountAddresses(accountId);
-    return NextResponse.json({ addresses });
+    const userId = req.nextUrl.searchParams.get("userId");
+
+    try {
+      const addresses = await prisma.address.findMany({
+        where: userId ? { userId } : undefined,
+        orderBy: { isDefault: "desc" },
+      });
+      return NextResponse.json({ addresses });
+    } catch {
+      // Mock fallback
+      return NextResponse.json({
+        addresses: [
+          {
+            id: "addr-1",
+            fullName: "John Customer",
+            street: "123 Amazon Way, Suite 400",
+            city: "Seattle",
+            state: "WA",
+            pincode: "98109",
+            country: "United States",
+            isDefault: true,
+          },
+          {
+            id: "addr-2",
+            fullName: "John Customer (Office)",
+            street: "456 Tech Park Boulevard",
+            city: "Bellevue",
+            state: "WA",
+            pincode: "98004",
+            country: "United States",
+            isDefault: false,
+          },
+        ],
+      });
+    }
   } catch (error) {
     console.error("Addresses GET error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -22,18 +49,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { fullName, street, city, state, pincode, country = "United States", isDefault = false, userId } = body;
+    const { userId = "guest", fullName, street, city, state, pincode, country = "United States", isDefault = false } = body;
 
     if (!fullName || !street || !city || !state || !pincode) {
       return NextResponse.json({ error: "All address fields are required" }, { status: 400 });
     }
 
-    const accountId = getAccountId(req, userId);
-
     try {
       const address = await prisma.address.create({
         data: {
-          userId: accountId,
+          userId,
           fullName,
           street,
           city,
@@ -43,12 +68,11 @@ export async function POST(req: NextRequest) {
           isDefault,
         },
       });
-      addAccountAddress(accountId, address);
       return NextResponse.json({ success: true, address });
     } catch {
       const mockAddr = {
         id: `addr-${Date.now()}`,
-        userId: accountId,
+        userId,
         fullName,
         street,
         city,
@@ -57,7 +81,6 @@ export async function POST(req: NextRequest) {
         country,
         isDefault,
       };
-      addAccountAddress(accountId, mockAddr);
       return NextResponse.json({ success: true, address: mockAddr });
     }
   } catch (error) {

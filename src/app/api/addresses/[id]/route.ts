@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAccountId, deleteAccountAddress } from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +9,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
-    const accountId = getAccountId(req);
-
-    deleteAccountAddress(accountId, id);
 
     try {
       await prisma.address.delete({

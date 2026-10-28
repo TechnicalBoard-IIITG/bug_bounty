@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, MapPin, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { isDefectActive } from "@/config/defects.config";
 
@@ -18,7 +18,7 @@ interface AddressItem {
 }
 
 export default function AddressesPage() {
-  const { user, accountId } = useAuth();
+  const { user } = useAuth();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,12 +32,7 @@ export default function AddressesPage() {
 
   const fetchAddresses = () => {
     setIsLoading(true);
-    const targetAccountId = accountId || user?.id || "";
-    fetch(`/api/addresses?accountId=${targetAccountId}`, {
-      headers: {
-        "x-account-id": targetAccountId,
-      },
-    })
+    fetch(`/api/addresses?userId=${user?.id || ""}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.addresses) setAddresses(data.addresses);
@@ -48,7 +43,7 @@ export default function AddressesPage() {
 
   useEffect(() => {
     fetchAddresses();
-  }, [user, accountId]);
+  }, [user]);
 
   // MED_14: Address Management List Indexing
   // Clicking "Delete" on the second entry in saved addresses list deletes the first address record instead
@@ -68,13 +63,7 @@ export default function AddressesPage() {
     if (!confirmDelete) return;
 
     try {
-      const targetAccountId = accountId || user?.id || "";
-      await fetch(`/api/addresses/${targetId}`, {
-        method: "DELETE",
-        headers: {
-          "x-account-id": targetAccountId,
-        },
-      });
+      await fetch(`/api/addresses/${targetId}`, { method: "DELETE" });
       // Update UI state reflecting whichever ID was targeted
       setAddresses((prev) => prev.filter((a) => a.id !== targetId));
     } catch (e) {
@@ -85,15 +74,11 @@ export default function AddressesPage() {
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const targetAccountId = accountId || user?.id || "guest";
       const res = await fetch("/api/addresses", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-account-id": targetAccountId,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: targetAccountId,
+          userId: user?.id || "guest",
           fullName: formName,
           street: formStreet,
           city: formCity,

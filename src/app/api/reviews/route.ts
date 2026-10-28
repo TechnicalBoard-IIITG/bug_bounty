@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { addSharedReview } from "@/lib/accountIsolation";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +29,6 @@ export async function POST(req: NextRequest) {
       helpfulVotes: 0,
       createdAt: new Date().toISOString(),
     };
-
-    // Shared globally for all teams/accounts
-    addSharedReview(newReview);
 
     try {
       const created = await prisma.review.create({
