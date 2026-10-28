@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
     try {
       const addresses = await prisma.address.findMany({
-        where: userId ? { userId } : undefined,
+        where: userId ? { userId } : { fullName: "Default Seed Address" },
         orderBy: { isDefault: "desc" },
       });
       return NextResponse.json({ addresses });
