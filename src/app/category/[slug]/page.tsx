@@ -7,6 +7,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { ProductItem, INITIAL_PRODUCTS, DEPARTMENTS } from "@/lib/mockData";
 import { Star, ChevronRight, Check } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { formatPrice, CURRENCY_SYMBOLS, CURRENCY_RATES } from "@/lib/utils";
 
 const SLUG_TO_CATEGORY: Record<string, string> = {
   electronics: "Electronics",
@@ -44,6 +46,7 @@ export default function CategoryPage() {
   const [maxPriceInput, setMaxPriceInput] = useState("");
   const [sortBy, setSortBy] = useState<string>("featured");
   const [primeOnly, setPrimeOnly] = useState(false);
+  const currency = useCartStore((s) => s.currency);
 
   useEffect(() => {
     setIsLoading(true);
@@ -83,9 +86,10 @@ export default function CategoryPage() {
 
   const handlePriceFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const rate = CURRENCY_RATES[currency] || 1;
     setPriceRange({
-      min: minPriceInput ? Number(minPriceInput) : undefined,
-      max: maxPriceInput ? Number(maxPriceInput) : undefined,
+      min: minPriceInput ? Number(minPriceInput) / rate : undefined,
+      max: maxPriceInput ? Number(maxPriceInput) / rate : undefined,
     });
   };
 
@@ -262,31 +266,31 @@ export default function CategoryPage() {
                 onClick={() => setPriceRange({ max: 50 })}
                 className="block text-left text-gray-700 hover:text-amazon-link hover:underline py-0.5"
               >
-                Under $50
+                Under {formatPrice(50, currency)}
               </button>
               <button
                 onClick={() => setPriceRange({ min: 50, max: 100 })}
                 className="block text-left text-gray-700 hover:text-amazon-link hover:underline py-0.5"
               >
-                $50 to $100
+                {formatPrice(50, currency)} to {formatPrice(100, currency)}
               </button>
               <button
                 onClick={() => setPriceRange({ min: 100, max: 200 })}
                 className="block text-left text-gray-700 hover:text-amazon-link hover:underline py-0.5"
               >
-                $100 to $200
+                {formatPrice(100, currency)} to {formatPrice(200, currency)}
               </button>
               <button
                 onClick={() => setPriceRange({ min: 200 })}
                 className="block text-left text-gray-700 hover:text-amazon-link hover:underline py-0.5"
               >
-                $200 &amp; Above
+                {formatPrice(200, currency)} &amp; Above
               </button>
             </div>
 
             <form onSubmit={handlePriceFilterSubmit} className="flex items-center gap-1.5 mt-2">
               <div className="relative flex-1">
-                <span className="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
+                <span className="absolute left-2 top-1.5 text-gray-400 text-xs">{CURRENCY_SYMBOLS[currency] || "₹"}</span>
                 <input
                   type="number"
                   placeholder="Min"
@@ -297,7 +301,7 @@ export default function CategoryPage() {
               </div>
               <span className="text-gray-400">-</span>
               <div className="relative flex-1">
-                <span className="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
+                <span className="absolute left-2 top-1.5 text-gray-400 text-xs">{CURRENCY_SYMBOLS[currency] || "₹"}</span>
                 <input
                   type="number"
                   placeholder="Max"

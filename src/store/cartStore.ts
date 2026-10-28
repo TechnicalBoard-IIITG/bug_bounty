@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { Currency } from "@/lib/utils";
 
 export interface CartItem {
   id: string;
@@ -22,8 +23,8 @@ export interface AppliedCoupon {
 interface CartState {
   items: CartItem[];
   coupons: AppliedCoupon[];
-  currency: "USD" | "CAD" | "EUR";
-  setCurrency: (c: "USD" | "CAD" | "EUR") => void;
+  currency: Currency;
+  setCurrency: (c: Currency) => void;
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeItem: (productId: string) => void;
@@ -41,7 +42,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       coupons: [],
-      currency: "USD",
+      currency: "INR",
 
       setCurrency: (currency) => set({ currency }),
 
@@ -176,6 +177,16 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "amazon_shopping_cart_storage",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          return {
+            ...persistedState,
+            currency: "INR",
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

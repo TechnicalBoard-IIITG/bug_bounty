@@ -6,6 +6,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { ProductItem, INITIAL_PRODUCTS } from "@/lib/mockData";
 import { Star, ChevronRight, ChevronLeft } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { CURRENCY_SYMBOLS, CURRENCY_RATES } from "@/lib/utils";
 
 function SearchCatalogContent() {
   const router = useRouter();
@@ -26,6 +28,8 @@ function SearchCatalogContent() {
   // Price Range Inputs
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
+  const currency = useCartStore((s) => s.currency);
+  const symbol = CURRENCY_SYMBOLS[currency] || "₹";
 
   // Fetch products from /api/products
   useEffect(() => {
@@ -73,8 +77,9 @@ function SearchCatalogContent() {
   const handlePriceFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
-    if (minPriceInput) params.set("minPrice", minPriceInput);
-    if (maxPriceInput) params.set("maxPrice", maxPriceInput);
+    const rate = CURRENCY_RATES[currency] || 1;
+    if (minPriceInput) params.set("minPrice", String(Number(minPriceInput) / rate));
+    if (maxPriceInput) params.set("maxPrice", String(Number(maxPriceInput) / rate));
     params.set("page", "1");
     router.push(`/s?${params.toString()}`);
   };
@@ -213,7 +218,7 @@ function SearchCatalogContent() {
             <h4 className="font-bold text-sm text-gray-900 mb-2">Price</h4>
             <form onSubmit={handlePriceFilterSubmit} className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">$</span>
+                <span className="text-gray-500">{symbol}</span>
                 <input
                   type="number"
                   placeholder="Min"
@@ -221,7 +226,7 @@ function SearchCatalogContent() {
                   onChange={(e) => setMinPriceInput(e.target.value)}
                   className="w-16 rounded border border-gray-300 px-2 py-1 text-xs"
                 />
-                <span className="text-gray-500">to $</span>
+                <span className="text-gray-500">to {symbol}</span>
                 <input
                   type="number"
                   placeholder="Max"

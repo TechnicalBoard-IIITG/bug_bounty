@@ -18,6 +18,7 @@ import {
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
+import { Currency, CURRENCY_FLAGS } from "@/lib/utils";
 
 export const Header: React.FC = () => {
   const router = useRouter();
@@ -138,12 +139,14 @@ export const Header: React.FC = () => {
 
         {/* Language & Currency Selector */}
         <div className="hidden sm:flex items-center gap-1 px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0">
-          <span className="text-sm">🇺🇸</span>
+          <span className="text-sm">{CURRENCY_FLAGS[currency] || "🇮🇳"}</span>
           <select
             value={currency}
-            onChange={(e) => setCurrency(e.target.value as any)}
+            onChange={(e) => setCurrency(e.target.value as Currency)}
             className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer"
+            aria-label="Currency and Language selector"
           >
+            <option value="INR" className="text-gray-900 font-normal">IN - ₹ INR</option>
             <option value="USD" className="text-gray-900 font-normal">EN - $ USD</option>
             <option value="CAD" className="text-gray-900 font-normal">CA - $ CAD</option>
             <option value="EUR" className="text-gray-900 font-normal">EU - € EUR</option>
