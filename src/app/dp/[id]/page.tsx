@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
               src={product.images[selectedImageIndex] || product.images[0]}
               alt={product.title}
               onClick={handleImageClick}
-              title="Click image (TB-1 Secret: 7 clicks leak flag)"
+              title={product.title}
               className="max-h-[420px] max-w-full object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105"
             />
 

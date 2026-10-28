@@ -154,8 +154,8 @@ All defects are centrally configured in `src/config/defects.config.ts`. Every de
 ### Part IV: Treasure Bugs (Rule 3.3 Flag Challenges) [10 Flat pts Each]
 - **Treasure Bug #1 (Console Leak)**: Clicking the main product image on PDP exactly 7 times outputs to browser console:  
   `TREASURE_BUG_#1: RkxBR3s3X2NsaWNrc191bmxvY2tlZF9zZWNyZXRfdHJlYXN1cmV9`
-- **Treasure Bug #2 (LocalStorage Privilege Escalation)**: Setting `localStorage.setItem('isAdmin', 'true')` in browser DevTools reveals a hidden judge debug panel with flag:  
-  `TREASURE_BUG_#2: FLAG{admin_debug_mode_escalation_success}`
+- **Treasure Bug #3 (DOM Source Inspection)**: Inspecting DOM HTML comments reveals:  
+  `TREASURE_BUG_#3: FLAG{inspect_element_dom_source_revealed}`
 
 ---
 

@@ -25,7 +25,7 @@ The full-stack Amazon e-commerce replica for the **Entropy 2K26 QA Bug Bounty Si
 | `/checkout` | **Checkout Flow** | Multi-step accordion: Address with browser autofill binding (Med 9), Country select (Easy 8), ZIP whitespace bypass (Med 19), Card formatting (Med 12), CVV tooltip (Easy 9), **Merged Tax Math (Med 10 + Hard 15)**, and debouncing (Med 13). |
 | `/orders` & `/orders/:id/summary` | **Orders & Receipts** | Order history with status badges, receipt viewer (Hard 2 enumeration), and order cancellation (Hard 10 delivered order cancellation). |
 | `/account`, `/account/addresses`, `/account/profile` | **Account Hub** | Saved addresses manager (Med 14 delete offset), Profile settings with Base64 avatar upload (Med 15 unrestricted MIME) and role escalation (Hard 13). |
-| `/admin/users` | **Admin Console** | Back-office user console (Hard 3 unrestricted access) and **TB-2 hidden debug drawer**. |
+| `/admin/users` | **Admin Console** | Back-office user console (Hard 3 unrestricted access) . |
 | `/login` & `/register` | **Authentication** | Sign-in with password mask eye toggle (Easy 10), open redirect (Hard 6), checkout redirect clear (Med 17), and registration password mismatch bypass (Med 16). |
 | `/forgot-password` & `/reset-password` | **Password Assistance** | Recovery token generation and password reset (Hard 5 reusable token flaw). |
 | `/contact` & `/faq` | **Support & Help** | Contact form with email validation bypass (Easy 11) and FAQ accordion with close failure (Easy 12). |
@@ -44,8 +44,8 @@ All 55 regular bugs + 2 treasure bugs are active by default in `src/config/defec
 4. **Treasure Bugs Formatting (Rule 3.3)**:
    - **TB #1 (Console Leak)**: Clicking product image 7 times outputs:  
      `TREASURE_BUG_#1: RkxBR3s3X2NsaWNrc191bmxvY2tlZF9zZWNyZXRfdHJlYXN1cmV9`
-   - **TB #2 (Admin Escalation)**: `localStorage.setItem('isAdmin', 'true')` reveals debug drawer with:  
-     `TREASURE_BUG_#2: FLAG{admin_debug_mode_escalation_success}`
+   - **TB #3 (DOM Source Inspection)**: Inspecting DOM HTML comments reveals:  
+     `TREASURE_BUG_#3: FLAG{inspect_element_dom_source_revealed}`
 5. **Merged Tax Logic (Medium 10 & Hard 15)**: In `src/app/checkout/page.tsx`, `taxableBase` evaluates to pre-discount subtotal when Med 10 is active, and `Math.floor(taxableBase)` truncates taxable cents before computing 8% tax when Hard 15 is active.
 
 ---
