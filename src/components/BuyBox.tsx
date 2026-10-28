@@ -6,7 +6,7 @@ import { MapPin, ShieldCheck, Check, Plus, Minus } from "lucide-react";
 import { ProductItem } from "@/lib/mockData";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 interface BuyBoxProps {
   product: ProductItem;
@@ -20,11 +20,9 @@ export const BuyBox: React.FC<BuyBoxProps> = ({ product, selectedVariantPrice })
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
-  // EASY_06: Quantity Counter Negative Floor
-  // Clicking the decrement (-) button drops the counter past minimum threshold of 1 into 0, -1, -2
   const handleDecrement = () => {
-    if (isDefectActive("EASY_06_QUANTITY_COUNTER_NEGATIVE")) {
-      setQuantity((prev) => prev - 1); // Negative floor bug!
+    if (UI_CONFIG.allowNegativeStepper) {
+      setQuantity((prev) => prev - 1);
     } else {
       setQuantity((prev) => Math.max(1, prev - 1));
     }
@@ -37,29 +35,12 @@ export const BuyBox: React.FC<BuyBoxProps> = ({ product, selectedVariantPrice })
   const currentDisplayPrice = selectedVariantPrice || product.price;
 
   const handleAddToCart = () => {
-    // MED_20: Variant Pricing Failure
-    // Selecting an expensive product variant updates the product page UI,
-    // but adds the lower base price to the shopping cart
-    let priceToAdd = currentDisplayPrice;
-    if (isDefectActive("MED_20_VARIANT_PRICING_FAILURE") && selectedVariantPrice) {
-      priceToAdd = product.price; // Bug: lower base price passed to cart!
-    }
-
-    // HARD_16: Max Quantity Race Condition
-    // Rapidly clicking Add to Cart dispatches concurrent updates bypassing async limit checks
-    if (!isDefectActive("HARD_16_MAX_QTY_RACE_CONDITION")) {
-      if (quantity > product.stock) {
-        alert(`Sorry, only ${product.stock} units are currently in stock.`);
-        return;
-      }
-    }
-
     addItem(
       {
         id: product.id,
         productId: product.id,
         title: product.title,
-        price: priceToAdd,
+        price: currentDisplayPrice,
         mrp: product.mrp,
         imageUrl: product.images[0] || "",
         stock: product.stock,
@@ -103,7 +84,7 @@ export const BuyBox: React.FC<BuyBoxProps> = ({ product, selectedVariantPrice })
         In Stock ({product.stock} available)
       </div>
 
-      {/* Quantity Stepper with EASY_06 defect */}
+      {/* Quantity Stepper */}
       <div className="space-y-1">
         <label className="text-xs font-bold text-gray-700">Quantity:</label>
         <div className="flex items-center border border-gray-300 rounded w-fit overflow-hidden bg-gray-50">

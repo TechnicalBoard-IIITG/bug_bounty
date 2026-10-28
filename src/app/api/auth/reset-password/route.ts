@@ -22,33 +22,29 @@ export async function POST(req: NextRequest) {
       // Fallback
     }
 
-    // Check if token exists
-    if (!resetRecord && token !== "secret-recovery-token-12345") {
-      return NextResponse.json({ error: "Invalid password recovery token" }, { status: 400 });
-    }
-
     // HARD_05: Password Reset Token Invalidation
-    // Completing a password reset fails to expire the recovery link, leaving the reset token reusable across multiple credential change submissions.
+    // When defect is active: Fails to invalidate token after first use, allowing replay resets
     if (!isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE")) {
       if (resetRecord && resetRecord.used) {
-        return NextResponse.json({ error: "This password recovery token has already been used" }, { status: 400 });
+        return NextResponse.json({ error: "This recovery token has already been consumed." }, { status: 400 });
       }
     }
 
-    const email = resetRecord?.email || "customer@amazon.local";
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     try {
-      await prisma.user.update({
-        where: { email },
-        data: { password: hashedPassword },
-      });
-
-      if (!isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE") && resetRecord) {
-        await prisma.passwordResetToken.update({
-          where: { id: resetRecord.id },
-          data: { used: true },
+      if (resetRecord) {
+        await prisma.user.updateMany({
+          where: { email: resetRecord.email },
+          data: { password: hashedPassword },
         });
+
+        if (!isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE")) {
+          await prisma.passwordResetToken.update({
+            where: { id: resetRecord.id },
+            data: { used: true },
+          });
+        }
       }
     } catch {
       // Fallback
@@ -56,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Password has been successfully updated!",
+      message: "Password updated successfully. You can now log in.",
     });
   } catch (error) {
     console.error("Reset password error:", error);

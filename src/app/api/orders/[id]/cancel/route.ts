@@ -52,6 +52,7 @@ export async function POST(
       // Fallback
     }
 
+    // Mock in-memory response
     return NextResponse.json({
       success: true,
       message: `Order #${id} status changed from "${currentStatus}" to "Cancelled".`,
@@ -59,11 +60,11 @@ export async function POST(
         id,
         orderNumber: id,
         status: "Cancelled",
-        previousStatus: currentStatus,
+        updatedAt: new Date().toISOString(),
       },
     });
   } catch (error) {
-    console.error("Order cancel error:", error);
+    console.error("Order cancellation error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

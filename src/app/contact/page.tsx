@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Mail, CheckCircle2, AlertCircle } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -16,16 +15,6 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    // EASY_11: Required Form Validation Enforcement
-    // Submitting the Contact Us form with mandatory "Email" input left blank
-    // bypasses client-side validation without displaying a warning
-    if (!isDefectActive("EASY_11_CONTACT_EMAIL_VALIDATION_BYPASS")) {
-      if (!email.trim() || !email.includes("@")) {
-        setError("Please enter a valid email address.");
-        return;
-      }
-    }
 
     if (!name.trim() || !message.trim()) {
       setError("Please fill out your name and message.");
@@ -93,28 +82,26 @@ export default function ContactPage() {
             <label className="font-bold text-gray-800 block mb-1">
               Email Address * (Mandatory)
             </label>
-            {/* Notice: No HTML5 'required' attribute when EASY_11 is active to demonstrate client validation bypass */}
             <input
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
+              placeholder="name@example.com"
               className="w-full rounded border border-gray-400 px-3 py-1.5 focus:border-amazon-orange focus:outline-none"
             />
-
           </div>
 
           <div>
-            <label className="font-bold text-gray-800 block mb-1">Topic / Subject</label>
+            <label className="font-bold text-gray-800 block mb-1">Subject</label>
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="w-full rounded border border-gray-400 bg-white px-3 py-1.5 focus:border-amazon-orange focus:outline-none"
             >
-              <option value="Order Inquiry">Where&apos;s my stuff / Order tracking</option>
-              <option value="Return / Refund">Returns, replacements & refunds</option>
-              <option value="Payment Issue">Payment, charges & invoices</option>
-              <option value="Defect Report">Bug report or website feedback</option>
+              <option value="Order Inquiry">Order Inquiry & Tracking</option>
+              <option value="Returns & Refunds">Returns & Refunds</option>
+              <option value="Prime Membership">Prime Membership Inquiry</option>
+              <option value="Feedback">Website Feedback & Suggestions</option>
             </select>
           </div>
 
@@ -122,22 +109,20 @@ export default function ContactPage() {
             <label className="font-bold text-gray-800 block mb-1">Message *</label>
             <textarea
               required
-              rows={5}
+              rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe your inquiry with as much detail as possible..."
+              placeholder="Describe your inquiry in detail..."
               className="w-full rounded border border-gray-400 px-3 py-1.5 focus:border-amazon-orange focus:outline-none"
             />
           </div>
 
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="rounded bg-amazon-yellow hover:bg-amazon-yellowHover px-6 py-2 font-bold text-amazon-text shadow-sm transition"
-            >
-              Submit Contact Form
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-2 rounded bg-amazon-yellow hover:bg-amazon-yellowHover font-bold text-xs text-amazon-text shadow-sm transition"
+          >
+            Submit Message
+          </button>
         </form>
       )}
     </div>

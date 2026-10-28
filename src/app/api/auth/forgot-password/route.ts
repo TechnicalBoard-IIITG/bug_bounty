@@ -17,22 +17,19 @@ export async function POST(req: NextRequest) {
     try {
       await prisma.passwordResetToken.create({
         data: {
-          email,
+          email: email.trim().toLowerCase(),
           token,
           used: false,
         },
       });
     } catch {
-      // In-memory fallback
+      // Fallback
     }
-
-    const resetLink = `/reset-password?token=${token}`;
 
     return NextResponse.json({
       success: true,
-      message: "Password reset link generated successfully",
-      resetLink,
-      token,
+      message: "If an account exists with this email, a reset link has been dispatched.",
+      resetUrl: `/reset-password?token=${token}`,
     });
   } catch (error) {
     console.error("Forgot password error:", error);

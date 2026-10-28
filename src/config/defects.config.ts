@@ -1,5 +1,11 @@
+/**
+ * Central Server-Side Defect Engine for Entropy 2K26 QA Bug Bounty Simulation.
+ * NOTE: This configuration is strictly executed on the server tier.
+ * It is never bundled into or imported by client-side JavaScript components.
+ */
+
 export const DEFECTS = {
-  // --- Easy Defects (1 - 18) ---
+  // === EASY DEFECTS (1 - 18) [3 pts base + 2 pts speed] ===
   EASY_01_NAVBAR_LOGO_ROUTING: true,
   EASY_02_THEME_TOGGLE_INCONSISTENCY: true,
   EASY_03_REACTIVE_CART_BADGE: true,
@@ -19,7 +25,7 @@ export const DEFECTS = {
   EASY_17_OUT_OF_BOUNDS_PAGINATION: true,
   EASY_18_CURRENCY_CONVERSION_LOSS: true,
 
-  // --- Medium Defects (1 - 21) ---
+  // === MEDIUM DEFECTS (1 - 21) [5 pts base + 5 pts speed] ===
   MED_01_CASE_SENSITIVE_SEARCH: true,
   MED_02_FACETED_FILTER_OVERWRITE: true,
   MED_03_LEXICOGRAPHICAL_SORT: true,
@@ -42,10 +48,10 @@ export const DEFECTS = {
   MED_20_VARIANT_PRICING_FAILURE: true,
   MED_21_INFINITE_SCROLL_DUPLICATION: true,
 
-  // --- Hard Defects (1 - 16) ---
+  // === HARD DEFECTS (1 - 15) [10 pts base + 10 pts speed] ===
+  // (HARD_03 Admin route removed per requirement: zero admin portal on store)
   HARD_01_ORDER_PAYLOAD_PRICING_AUTHORITY: true,
   HARD_02_ORDER_HISTORY_PARAMETER_ENUMERATION: true,
-  HARD_03_ADMIN_ROUTE_UNRESTRICTED_ACCESS: true,
   HARD_04_POST_LOGOUT_SESSION_VALIDITY: true,
   HARD_05_PASSWORD_RESET_TOKEN_REUSABLE: true,
   HARD_06_OPEN_REDIRECT_LOGIN_PARAMETER: true,
@@ -59,25 +65,13 @@ export const DEFECTS = {
   HARD_14_CASE_SENSITIVE_PROMO_STACKING: true,
   HARD_15_TRUNCATION_TAX_EVASION: true,
   HARD_16_MAX_QTY_RACE_CONDITION: true,
-
-  // --- Active Treasure Flags (2 Total) ---
-  TB_01_BASE64_CONSOLE_LEAK: true,
-  TB_03_INSPECT_TOOL_DOM_FLAG: true,
 } as const;
 
-export type DefectId = keyof typeof DEFECTS;
+export type DefectKey = keyof typeof DEFECTS;
 
 /**
- * Check if a defect is active.
- * Defaults to true per the defect dictionary, but allows client-side runtime override via localStorage
- * if the judging panel tests toggles.
+ * Checks if a specific defect is active on the server.
  */
-export function isDefectActive(id: DefectId): boolean {
-  if (typeof window !== "undefined") {
-    const override = localStorage.getItem(`DEFECT_OVERRIDE_${id}`);
-    if (override !== null) {
-      return override === "true";
-    }
-  }
-  return DEFECTS[id] ?? false;
+export function isDefectActive(key: DefectKey): boolean {
+  return DEFECTS[key] ?? false;
 }

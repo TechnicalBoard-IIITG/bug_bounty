@@ -6,830 +6,1588 @@ export interface ProductItem {
   price: number;
   mrp: number;
   category: string;
+  department: string;
   brand: string;
   stock: number;
   rating: number;
   reviewCount: number;
   images: string[];
   specs: Record<string, string>;
+  isPrime: boolean;
+  isDeal: boolean;
+  badge: string | null;
   createdAt?: string;
 }
 
+export const DEPARTMENTS = [
+  "Electronics",
+  "Computers",
+  "Fashion",
+  "Home & Kitchen",
+  "Books",
+  "Beauty & Health",
+] as const;
+
 export const INITIAL_PRODUCTS: ProductItem[] = [
-  // --- Electronics ---
   {
-    id: "prod-e1",
-    title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
-    slug: "sony-wh-1000xm5-wireless-headphones",
-    description: "Industry-leading noise cancellation with two processors and 8 microphones. Up to 30-hour battery life with quick charging. Crystal clear hands-free calling with 4 beamforming microphones.",
-    price: 348.0,
-    mrp: 399.99,
-    category: "Electronics",
-    brand: "Sony",
-    stock: 45,
-    rating: 4.8,
-    reviewCount: 1420,
-    images: [
+    "id": "prod-e01",
+    "title": "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
+    "slug": "sony-wh-1000xm5-wireless-headphones",
+    "description": "Industry-leading noise cancellation with two processors and 8 microphones. Up to 30-hour battery life with quick charging. Crystal clear hands-free calling with 4 beamforming microphones.",
+    "price": 348,
+    "mrp": 399.99,
+    "brand": "Sony",
+    "stock": 45,
+    "rating": 4.8,
+    "reviewCount": 1420,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Overall Pick",
+    "images": [
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&q=80",
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&q=80"
     ],
-    specs: {
-      Brand: "Sony",
-      "Color Options": "Black, Silver, Midnight Blue",
-      Connectivity: "Bluetooth 5.2, 3.5mm AUX",
-      "Battery Life": "30 Hours",
+    "specs": {
+      "Brand": "Sony",
+      "Connectivity": "Bluetooth 5.2",
+      "Battery": "30 Hours",
+      "Color": "Black"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e2",
-    title: "Apple MacBook Pro 14-inch M3 Chip (16GB RAM, 512GB SSD)",
-    slug: "apple-macbook-pro-14-m3",
-    description: "Supercharged by the M3 chip with an 8-core CPU and 10-core GPU. Striking Liquid Retina XDR display with 1000 nits sustained brightness. Up to 22 hours of battery life.",
-    price: 1599.0,
-    mrp: 1799.0,
-    category: "Electronics",
-    brand: "Apple",
-    stock: 25,
-    rating: 4.9,
-    reviewCount: 890,
-    images: [
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80",
-      "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80",
+    "id": "prod-e02",
+    "title": "Samsung 55-inch OLED 4K Smart TV S90C Series",
+    "slug": "samsung-55-oled-4k-smart-tv",
+    "description": "Quantum HDR OLED delivers pure blacks and over a billion shades of colors. Neural Quantum Processor with 4K upscaling. LaserSlim design and Motion Xcelerator Turbo Pro 144Hz.",
+    "price": 1297.99,
+    "mrp": 1599.99,
+    "brand": "Samsung",
+    "stock": 18,
+    "rating": 4.7,
+    "reviewCount": 425,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&q=80"
     ],
-    specs: {
-      Processor: "Apple M3 Chip",
-      RAM: "16GB Unified Memory",
-      Storage: "512GB PCIe SSD",
+    "specs": {
+      "Brand": "Samsung",
+      "Screen": "55 Inches",
+      "Resolution": "4K UHD",
+      "RefreshRate": "144 Hz"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e3",
-    title: "Samsung 55-inch OLED 4K Smart TV S90C Series",
-    slug: "samsung-55-oled-4k-smart-tv",
-    description: "Quantum HDR OLED delivers pure blacks and over a billion shades of colors. Neural Quantum Processor with 4K upscaling. LaserSlim design and Motion Xcelerator Turbo Pro 144Hz.",
-    price: 1297.99,
-    mrp: 1599.99,
-    category: "Electronics",
-    brand: "Samsung",
-    stock: 18,
-    rating: 4.7,
-    reviewCount: 425,
-    images: [
-      "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&q=80",
+    "id": "prod-e03",
+    "title": "Fujifilm X-T5 Mirrorless Digital Camera Body",
+    "slug": "fujifilm-x-t5-mirrorless-camera",
+    "description": "40.2MP X-Trans CMOS 5 HR sensor with 5-axis in-body image stabilization. Pixel Shift Multi-Shot generates 160MP photos. 6.2K/30p internal video recording.",
+    "price": 1699.95,
+    "mrp": 1799.95,
+    "brand": "Fujifilm",
+    "stock": 12,
+    "rating": 4.9,
+    "reviewCount": 194,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80"
     ],
-    specs: {
-      "Screen Size": "55 Inches",
-      "Display Technology": "OLED 4K",
-      "Refresh Rate": "144 Hz",
+    "specs": {
+      "Brand": "Fujifilm",
+      "Sensor": "40.2 MP",
+      "Mount": "Fujifilm X",
+      "Video": "6.2K 30fps"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e4",
-    title: "Logitech MX Master 3S Wireless Performance Mouse",
-    slug: "logitech-mx-master-3s-mouse",
-    description: "Any-surface tracking with 8K DPI sensor. Quiet Clicks technology eliminates 90% of click noise. MagSpeed electromagnetic scrolling for supreme speed and precision.",
-    price: 99.99,
-    mrp: 119.99,
-    category: "Electronics",
-    brand: "Logitech",
-    stock: 80,
-    rating: 4.8,
-    reviewCount: 3120,
-    images: [
-      "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&q=80",
+    "id": "prod-e04",
+    "title": "Bose Smart Soundbar 900 Dolby Atmos with Alexa",
+    "slug": "bose-smart-soundbar-900",
+    "description": "Immersive soundbar with custom upward-firing dipole transducers. Proprietary PhaseGuide technology beams multi-directional sound. Works with Wi-Fi, Bluetooth, Apple AirPlay 2.",
+    "price": 749,
+    "mrp": 899,
+    "brand": "Bose",
+    "stock": 30,
+    "rating": 4.6,
+    "reviewCount": 812,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=800&q=80"
     ],
-    specs: {
-      Sensor: "Darkfield 8000 DPI",
-      Connectivity: "Bluetooth Low Energy & Logi Bolt",
+    "specs": {
+      "Brand": "Bose",
+      "Audio": "Dolby Atmos",
+      "Connectivity": "HDMI eARC, Optical, Wi-Fi",
+      "Color": "Arctic White"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e5",
-    title: "Keychron Q1 Pro Wireless Custom Mechanical Keyboard",
-    slug: "keychron-q1-pro-wireless-keyboard",
-    description: "Full aluminum CNC machined 75% layout keyboard with hot-swappable switches, double-gasket design, and customizable RGB backlight. Connects via Bluetooth 5.1 or Type-C cable.",
-    price: 199.0,
-    mrp: 219.0,
-    category: "Electronics",
-    brand: "Keychron",
-    stock: 32,
-    rating: 4.6,
-    reviewCount: 280,
-    images: [
-      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80",
+    "id": "prod-e05",
+    "title": "Garmin Fenix 7 Pro Solar Multisport GPS Smartwatch",
+    "slug": "garmin-fenix-7-pro-solar-watch",
+    "description": "Solar powered multisport GPS watch with built-in LED flashlight and endurance tracking metrics. Up to 22 days of battery life in smartwatch mode with solar charging.",
+    "price": 699.99,
+    "mrp": 799.99,
+    "brand": "Garmin",
+    "stock": 22,
+    "rating": 4.8,
+    "reviewCount": 560,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
     ],
-    specs: {
-      Layout: "75% ANSI",
-      Switches: "Keychron K Pro Red",
+    "specs": {
+      "Brand": "Garmin",
+      "Display": "1.3 Inch Sunlight-visible",
+      "Battery": "22 Days Solar",
+      "WaterRating": "10 ATM"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e6",
-    title: "Fujifilm X-T5 Mirrorless Digital Camera Body",
-    slug: "fujifilm-x-t5-mirrorless-camera",
-    description: "40.2MP X-Trans CMOS 5 HR sensor with 5-axis in-body image stabilization (IBIS). Pixel Shift Multi-Shot generates 160MP photos. 6.2K/30p 4:2:2 10-bit internal video recording.",
-    price: 1699.95,
-    mrp: 1799.95,
-    category: "Electronics",
-    brand: "Fujifilm",
-    stock: 12,
-    rating: 4.9,
-    reviewCount: 194,
-    images: [
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
+    "id": "prod-e06",
+    "title": "Apple iPad Air 11-inch M2 Chip (128GB, Space Gray)",
+    "slug": "apple-ipad-air-11-m2",
+    "description": "Breakthrough M2 performance in an impossibly thin and light design. Spectacular 11-inch Liquid Retina display with P3 wide color and antireflective coating.",
+    "price": 599,
+    "mrp": 649,
+    "brand": "Apple",
+    "stock": 35,
+    "rating": 4.9,
+    "reviewCount": 1120,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80"
     ],
-    specs: {
-      Resolution: "40.2 Megapixels",
-      Mount: "Fujifilm X Mount",
+    "specs": {
+      "Brand": "Apple",
+      "Chip": "Apple M2",
+      "Storage": "128 GB",
+      "Screen": "11 Inches"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e7",
-    title: "Anker Soundcore Motion+ Bluetooth Speaker (Hi-Res 30W)",
-    slug: "anker-soundcore-motion-plus-speaker",
-    description: "Hi-Res Audio certified with ultra-wide frequency range from 50 Hz to 40 kHz. Qualcomm aptX audio for lossless music streaming. IPX7 waterproof rating for outdoor use.",
-    price: 99.99,
-    mrp: 129.99,
-    category: "Electronics",
-    brand: "Anker",
-    stock: 65,
-    rating: 4.7,
-    reviewCount: 2450,
-    images: [
-      "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=800&q=80",
+    "id": "prod-e07",
+    "title": "Sonos Move 2 Portable Bluetooth & Wi-Fi Speaker",
+    "slug": "sonos-move-2-portable-speaker",
+    "description": "Stereo sound on the move with up to 24 hours of continuous playback. IP56 water and dust resistance. Automatically tunes itself to its surroundings via Trueplay.",
+    "price": 449,
+    "mrp": 499,
+    "brand": "Sonos",
+    "stock": 40,
+    "rating": 4.7,
+    "reviewCount": 390,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80"
     ],
-    specs: {
-      Output: "30 Watts",
-      Waterproof: "IPX7",
+    "specs": {
+      "Brand": "Sonos",
+      "Battery": "24 Hours",
+      "Waterproof": "IP56",
+      "Connectivity": "Wi-Fi & Bluetooth"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e8",
-    title: "Apple iPad Air 11-inch M2 Chip (128GB, Wi-Fi 6E)",
-    slug: "apple-ipad-air-11-m2",
-    description: "The redesigned 11-inch iPad Air is supercharged by the Apple M2 chip. Features a Liquid Retina display, landscape 12MP front camera with Center Stage, and superfast Wi-Fi 6E.",
-    price: 599.0,
-    mrp: 649.0,
-    category: "Electronics",
-    brand: "Apple",
-    stock: 40,
-    rating: 4.8,
-    reviewCount: 780,
-    images: [
-      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80",
+    "id": "prod-e08",
+    "title": "DJI Mini 4 Pro Drone with RC 2 Controller",
+    "slug": "dji-mini-4-pro-drone",
+    "description": "Under 249g ultra-lightweight drone with omnidirectional active obstacle sensing. 4K/60fps HDR true vertical shooting and up to 34 minutes of flight time.",
+    "price": 759,
+    "mrp": 799,
+    "brand": "DJI",
+    "stock": 15,
+    "rating": 4.9,
+    "reviewCount": 680,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=800&q=80"
     ],
-    specs: {
-      Display: "11-inch Liquid Retina",
-      Chip: "Apple M2 8-core CPU",
+    "specs": {
+      "Brand": "DJI",
+      "Weight": "249g",
+      "Video": "4K/60fps HDR",
+      "FlightTime": "34 Minutes"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e9",
-    title: "Garmin Forerunner 265 GPS Running Smartwatch",
-    slug: "garmin-forerunner-265-smartwatch",
-    description: "Brilliant AMOLED touchscreen display with traditional button controls. Advanced running metrics including wrist-based running power and Training Readiness Score. Up to 13 days of battery life.",
-    price: 449.99,
-    mrp: 499.99,
-    category: "Electronics",
-    brand: "Garmin",
-    stock: 22,
-    rating: 4.7,
-    reviewCount: 560,
-    images: [
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+    "id": "prod-e09",
+    "title": "Dell UltraSharp 32-inch 4K UHD USB-C Hub Monitor (U3223QE)",
+    "slug": "dell-ultrasharp-32-4k-monitor",
+    "description": "Brilliant color and contrast with IPS Black technology. 4K resolution with 98% DCI-P3 coverage and 90W USB-C power delivery hub.",
+    "price": 719.99,
+    "mrp": 919.99,
+    "brand": "Dell",
+    "stock": 20,
+    "rating": 4.6,
+    "reviewCount": 340,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80"
     ],
-    specs: {
-      Display: "1.3-inch AMOLED",
-      Waterproof: "5 ATM",
+    "specs": {
+      "Brand": "Dell",
+      "Display": "32 Inches IPS Black",
+      "Resolution": "3840 x 2160",
+      "Ports": "USB-C, DP, HDMI"
     },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-e10",
-    title: "Dell UltraSharp 27-inch 4K USB-C Hub Monitor (U2723QE)",
-    slug: "dell-ultrasharp-27-4k-monitor",
-    description: "IPS Black technology with 2000:1 contrast ratio. Exceptional color accuracy with 98% DCI-P3 coverage. Built-in USB-C hub with 90W power delivery and RJ45 Ethernet port.",
-    price: 549.99,
-    mrp: 629.99,
-    category: "Electronics",
-    brand: "Dell",
-    stock: 19,
-    rating: 4.6,
-    reviewCount: 380,
-    images: [
-      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80",
+    "id": "prod-e10",
+    "title": "Anker Nebula Capsule 3 Laser 1080p Smart Mini Projector",
+    "slug": "anker-nebula-capsule-3-laser-projector",
+    "description": "Pocket-sized laser projector delivering 1080p resolution and 300 ANSI Lumens. Built-in 52Wh battery provides up to 2.5 hours of cinema playtime.",
+    "price": 679.99,
+    "mrp": 799.99,
+    "brand": "Anker",
+    "stock": 28,
+    "rating": 4.5,
+    "reviewCount": 512,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80"
     ],
-    specs: {
-      Resolution: "4K UHD 3840 x 2160",
-      Panel: "IPS Black",
+    "specs": {
+      "Brand": "Anker",
+      "Brightness": "300 ANSI Lumens",
+      "Resolution": "1080p FHD",
+      "Playtime": "2.5 Hours"
     },
-  },
-
-  // --- Fashion ---
-  {
-    id: "prod-f1",
-    title: "Blue Denim Jacket",
-    slug: "classic-blue-denim-jacket",
-    description: "Timeless trucker-style denim jacket crafted from 100% heavyweight cotton denim. Features brass button closures, button-flap chest pockets, and adjustable waist tabs for a classic vintage fit.",
-    price: 68.0,
-    mrp: 89.99,
-    category: "Fashion",
-    brand: "Levi's",
-    stock: 35,
-    rating: 4.5,
-    reviewCount: 520,
-    images: [
-      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&q=80",
-      "https://images.unsplash.com/photo-1543076447-215ad9ba6923?w=800&q=80",
-    ],
-    specs: {
-      Material: "100% Cotton Denim",
-      Fit: "Classic Standard Fit",
-    },
+    "category": "Electronics",
+    "department": "Electronics"
   },
   {
-    id: "prod-f2",
-    title: "Nike Air Zoom Pegasus 40 Running Shoes",
-    slug: "nike-air-zoom-pegasus-40",
-    description: "Springy ride for every run. Dual Nike Air Zoom units and React foam provide lightweight, durable cushioning. Engineered mesh upper enhances breathability and comfortable lockdown.",
-    price: 130.0,
-    mrp: 140.0,
-    category: "Fashion",
-    brand: "Nike",
-    stock: 55,
-    rating: 4.7,
-    reviewCount: 1850,
-    images: [
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
-      "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&q=80",
+    "id": "prod-c01",
+    "title": "Apple MacBook Pro 14-inch M3 Chip (16GB RAM, 512GB SSD)",
+    "slug": "apple-macbook-pro-14-m3",
+    "description": "Supercharged by the M3 chip with an 8-core CPU and 10-core GPU. Striking Liquid Retina XDR display with 1000 nits sustained brightness. Up to 22 hours of battery life.",
+    "price": 1599,
+    "mrp": 1799,
+    "brand": "Apple",
+    "stock": 25,
+    "rating": 4.9,
+    "reviewCount": 890,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80"
     ],
-    specs: {
-      Type: "Road Running Shoes",
-      Cushioning: "Nike React Foam + Zoom Air",
+    "specs": {
+      "Brand": "Apple",
+      "Processor": "M3",
+      "RAM": "16 GB",
+      "Storage": "512 GB SSD"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f3",
-    title: "Patagonia Torrentshell 3L Waterproof Rain Jacket",
-    slug: "patagonia-torrentshell-3l-rain-jacket",
-    description: "Simple and unpretentious, our trusted Torrentshell 3L Jacket uses 3-layer H2No Performance Standard technology for exceptional waterproof/breathable performance.",
-    price: 179.0,
-    mrp: 199.0,
-    category: "Fashion",
-    brand: "Patagonia",
-    stock: 28,
-    rating: 4.8,
-    reviewCount: 710,
-    images: [
-      "https://images.unsplash.com/photo-1544441893-675973e31985?w=800&q=80",
+    "id": "prod-c02",
+    "title": "Lenovo ThinkPad X1 Carbon Gen 11 Ultrabook (Intel Core i7, 32GB RAM)",
+    "slug": "lenovo-thinkpad-x1-carbon-gen-11",
+    "description": "Ultra-thin carbon fiber chassis engineered for supreme enterprise productivity. 14-inch 2.8K OLED display, Dolby Atmos sound, and fingerprint biometrics.",
+    "price": 1649,
+    "mrp": 1899,
+    "brand": "Lenovo",
+    "stock": 14,
+    "rating": 4.7,
+    "reviewCount": 310,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&q=80"
     ],
-    specs: {
-      Waterproofing: "3-layer H2No Performance Shell",
-      Fabric: "100% Recycled ECONYL Nylon",
+    "specs": {
+      "Brand": "Lenovo",
+      "Processor": "Intel Core i7-1365U",
+      "RAM": "32 GB",
+      "Storage": "1 TB SSD"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f4",
-    title: "Ray-Ban Classic Aviator Polarized Sunglasses (RB3025)",
-    slug: "ray-ban-classic-aviator-sunglasses",
-    description: "Originally designed for U.S. aviators in 1937. Crystal green G-15 polarized lenses with 100% UV400 protection and gold metal wire frames.",
-    price: 174.0,
-    mrp: 221.0,
-    category: "Fashion",
-    brand: "Ray-Ban",
-    stock: 42,
-    rating: 4.6,
-    reviewCount: 2210,
-    images: [
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&q=80",
+    "id": "prod-c03",
+    "title": "Logitech MX Master 3S Wireless Performance Mouse",
+    "slug": "logitech-mx-master-3s-mouse",
+    "description": "Any-surface tracking with 8K DPI sensor. Quiet Clicks technology eliminates 90% of click noise. MagSpeed electromagnetic scrolling for supreme speed and precision.",
+    "price": 99.99,
+    "mrp": 119.99,
+    "brand": "Logitech",
+    "stock": 80,
+    "rating": 4.8,
+    "reviewCount": 3120,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&q=80"
     ],
-    specs: {
-      Frame: "Gold Metal",
-      Lens: "Green Classic G-15 Polarized",
+    "specs": {
+      "Brand": "Logitech",
+      "Sensor": "8000 DPI Darkfield",
+      "Connectivity": "Bluetooth & Logi Bolt",
+      "Battery": "70 Days"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f5",
-    title: "Bellroy Slim Leather Bifold Wallet (RFID Protected)",
-    slug: "bellroy-slim-sleeve-leather-wallet",
-    description: "Slim profile holds 4-11 cards and folded bills without bulk. Premium environmentally certified leather with RFID blocking technology.",
-    price: 79.0,
-    mrp: 89.0,
-    category: "Fashion",
-    brand: "Bellroy",
-    stock: 60,
-    rating: 4.7,
-    reviewCount: 940,
-    images: [
-      "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80",
+    "id": "prod-c04",
+    "title": "Keychron Q1 Pro Wireless Custom Mechanical Keyboard (Red Switches)",
+    "slug": "keychron-q1-pro-wireless-keyboard",
+    "description": "Full aluminum CNC machined 75% layout keyboard with hot-swappable switches, double-gasket acoustic design, and customizable RGB backlight.",
+    "price": 199,
+    "mrp": 219,
+    "brand": "Keychron",
+    "stock": 32,
+    "rating": 4.6,
+    "reviewCount": 280,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80"
     ],
-    specs: {
-      Material: "Top-grain Vegetable-tanned Leather",
-      Features: "RFID Protection",
+    "specs": {
+      "Brand": "Keychron",
+      "Layout": "75%",
+      "Switches": "K Pro Red Linear",
+      "Material": "Full CNC Aluminum"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f6",
-    title: "Adidas Originals Stan Smith Classic Leather Sneakers",
-    slug: "adidas-stan-smith-classic-sneakers",
-    description: "The minimalist tennis classic with crisp white leather upper, perforated 3-stripes, and fair-green heel patch. Clean, timeless sneaker style.",
-    price: 85.0,
-    mrp: 100.0,
-    category: "Fashion",
-    brand: "Adidas",
-    stock: 48,
-    rating: 4.6,
-    reviewCount: 3410,
-    images: [
-      "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=800&q=80",
+    "id": "prod-c05",
+    "title": "Samsung T7 Shield 2TB Portable SSD (USB 3.2 Gen 2, Rugged)",
+    "slug": "samsung-t7-shield-2tb-ssd",
+    "description": "Rugged durability with IP65 rating for water and dust resistance. Blazing read/write speeds up to 1050 MB/s. Dynamic Thermal Guard protects data integrity.",
+    "price": 169.99,
+    "mrp": 219.99,
+    "brand": "Samsung",
+    "stock": 60,
+    "rating": 4.8,
+    "reviewCount": 2450,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=800&q=80"
     ],
-    specs: {
-      Upper: "Synthetic Leather Upper with Recycled Primegreen",
-      Outsole: "Rubber Cupsole",
+    "specs": {
+      "Brand": "Samsung",
+      "Capacity": "2 TB",
+      "Interface": "USB 3.2 Gen 2",
+      "Speed": "1050 MB/s"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f7",
-    title: "Everlane The Organic Cotton Crew T-Shirt (3-Pack)",
-    slug: "everlane-organic-cotton-crew-tshirt-3pack",
-    description: "A wardrobe staple made from certified organic cotton with a comfortable regular fit. Pre-shrunk and exceptionally soft on skin.",
-    price: 45.0,
-    mrp: 60.0,
-    category: "Fashion",
-    brand: "Everlane",
-    stock: 75,
-    rating: 4.5,
-    reviewCount: 420,
-    images: [
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&q=80",
+    "id": "prod-c06",
+    "title": "Anker 778 Thunderbolt 4 Docking Station (12-in-1)",
+    "slug": "anker-778-thunderbolt-4-dock",
+    "description": "Massive 12-in-1 expansion with 40Gbps upstream Thunderbolt 4 port, 100W maximum laptop charging, 8K single display or triple 4K display support.",
+    "price": 299.99,
+    "mrp": 379.99,
+    "brand": "Anker",
+    "stock": 24,
+    "rating": 4.5,
+    "reviewCount": 410,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1622445262464-84b14e32452e?w=800&q=80"
     ],
-    specs: {
-      Material: "100% Certified Organic Cotton",
-      Pack: "3 T-Shirts",
+    "specs": {
+      "Brand": "Anker",
+      "Ports": "12 Ports",
+      "Charging": "100W Max",
+      "Video": "8K @ 30Hz"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f8",
-    title: "Fossil Townsman Automatic Stainless Steel Watch",
-    slug: "fossil-townsman-automatic-watch",
-    description: "Sophisticated skeleton dial showcases intricate automatic mechanical movement. Amber crystal lens with polished stainless steel case and brown genuine leather strap.",
-    price: 195.0,
-    mrp: 260.0,
-    category: "Fashion",
-    brand: "Fossil",
-    stock: 15,
-    rating: 4.4,
-    reviewCount: 310,
-    images: [
-      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&q=80",
+    "id": "prod-c07",
+    "title": "Logitech Brio 4K Ultra HD Pro Webcam with HDR",
+    "slug": "logitech-brio-4k-webcam",
+    "description": "Spectacular 4K ultra-high definition video calling with RightLight 3 and HDR technology. Infrared facial recognition for secure Windows Hello login.",
+    "price": 139.99,
+    "mrp": 199.99,
+    "brand": "Logitech",
+    "stock": 55,
+    "rating": 4.6,
+    "reviewCount": 1890,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?w=800&q=80"
     ],
-    specs: {
-      Movement: "Automatic Mechanical",
-      "Case Size": "44 mm",
+    "specs": {
+      "Brand": "Logitech",
+      "Resolution": "4K / 30fps, 1080p / 60fps",
+      "FieldOfView": "65°, 78°, 90°",
+      "Mic": "Dual Omni"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f9",
-    title: "Lululemon Commission Slim-Fit Chino Pants (Warpstreme)",
-    slug: "lululemon-commission-slim-chino",
-    description: "Chino-inspired style engineered for everyday motion. Breathable Warpstreme fabric with four-way stretch, wrinkle resistance, and hidden zipper pockets.",
-    price: 128.0,
-    mrp: 148.0,
-    category: "Fashion",
-    brand: "Lululemon",
-    stock: 38,
-    rating: 4.8,
-    reviewCount: 620,
-    images: [
-      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80",
+    "id": "prod-c08",
+    "title": "ASUS ROG Rapture GT6 Gaming Mesh Wi-Fi 6 System (2-Pack)",
+    "slug": "asus-rog-rapture-gt6-wifi-6",
+    "description": "High-efficiency performance mesh router with tri-band Wi-Fi 6 coverage up to 5,800 sq ft. Dedicated gaming port, triple-level game acceleration, and 2.5G WAN port.",
+    "price": 429.99,
+    "mrp": 499.99,
+    "brand": "ASUS",
+    "stock": 16,
+    "rating": 4.7,
+    "reviewCount": 230,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80"
     ],
-    specs: {
-      Fabric: "Warpstreme Polyester Fabric",
-      Fit: "Slim Fit",
+    "specs": {
+      "Brand": "ASUS",
+      "Coverage": "Up to 5800 sq ft",
+      "Speed": "AX10000 Tri-Band",
+      "Ports": "2.5G WAN, 3x Gigabit LAN"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-f10",
-    title: "The North Face McMurdo Down Parka 600-Fill",
-    slug: "the-north-face-mcmurdo-parka",
-    description: "Ultimate cold-weather protection with 600-fill recycled waterfowl down and DryVent 2L waterproof shell. Removable faux-fur hood trim and dual alpine chest pockets.",
-    price: 360.0,
-    mrp: 400.0,
-    category: "Fashion",
-    brand: "The North Face",
-    stock: 20,
-    rating: 4.7,
-    reviewCount: 540,
-    images: [
-      "https://images.unsplash.com/photo-1539533018447-63fcce667883?w=800&q=80",
+    "id": "prod-c09",
+    "title": "Rain Design mStand Aluminum Laptop Stand (Silver)",
+    "slug": "rain-design-mstand-laptop-stand",
+    "description": "Solid single-piece aluminum design provides rock-solid stability and acts as a heat sink to cool the laptop. Raises screen by 5.9 inches to eye level.",
+    "price": 39.99,
+    "mrp": 49.99,
+    "brand": "Rain Design",
+    "stock": 90,
+    "rating": 4.8,
+    "reviewCount": 8400,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80"
     ],
-    specs: {
-      Insulation: "600-Fill Recycled Waterfowl Down",
-      Shell: "DryVent 2-Layer Waterproof",
+    "specs": {
+      "Brand": "Rain Design",
+      "Material": "Sand-blasted Aluminum",
+      "Elevation": "5.9 Inches",
+      "Weight": "3 lbs"
     },
-  },
-
-  // --- Home & Kitchen ---
-  {
-    id: "prod-h1",
-    title: "Ninja AF101 4-Quart Digital Air Fryer",
-    slug: "ninja-af101-digital-air-fryer",
-    description: "Air fry with up to 75% less fat than traditional frying methods. Wide temperature range from 105°F to 400°F. Includes 4-quart nonstick basket and crisper plate.",
-    price: 89.99,
-    mrp: 129.99,
-    category: "Home & Kitchen",
-    brand: "Ninja",
-    stock: 50,
-    rating: 4.8,
-    reviewCount: 4210,
-    images: [
-      "https://images.unsplash.com/photo-1585515320310-259814833e62?w=800&q=80",
-    ],
-    specs: {
-      Capacity: "4 Quarts",
-      Power: "1500 Watts",
-    },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-h2",
-    title: "Breville Barista Touch Espresso Machine (Stainless Steel)",
-    slug: "breville-barista-touch-espresso-machine",
-    description: "Barista-quality performance with intuitive touchscreen display. Built-in conical burr grinder with dose control. Automated milk texturing delivers micro-foam for latte art.",
-    price: 999.95,
-    mrp: 1199.95,
-    category: "Home & Kitchen",
-    brand: "Breville",
-    stock: 14,
-    rating: 4.7,
-    reviewCount: 910,
-    images: [
-      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&q=80",
+    "id": "prod-c10",
+    "title": "CyberPower 1500VA / 1000W Pure Sine Wave UPS Battery Backup",
+    "slug": "cyberpower-1500va-pure-sine-ups",
+    "description": "Pure sine wave battery backup system with 12 NEMA 5-15R outlets and multifunction LCD display. Automatic Voltage Regulation safeguards sensitive workstations.",
+    "price": 219.95,
+    "mrp": 249.95,
+    "brand": "CyberPower",
+    "stock": 20,
+    "rating": 4.7,
+    "reviewCount": 4200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80"
     ],
-    specs: {
-      Type: "Automatic Espresso Machine",
-      Pressure: "15 Bar Italian Pump",
+    "specs": {
+      "Brand": "CyberPower",
+      "Capacity": "1500VA / 1000W",
+      "Outlets": "12 Outlets",
+      "Waveform": "Sine Wave"
     },
+    "category": "Computers",
+    "department": "Computers"
   },
   {
-    id: "prod-h3",
-    title: "Vitamix 5200 Professional-Grade Blender 64oz",
-    slug: "vitamix-5200-blender-64oz",
-    description: "The industry standard for silky-smooth smoothies, hot soups, and nut butters. Aircraft-grade stainless steel blades and variable speed control with pulse feature.",
-    price: 399.95,
-    mrp: 499.95,
-    category: "Home & Kitchen",
-    brand: "Vitamix",
-    stock: 22,
-    rating: 4.9,
-    reviewCount: 3890,
-    images: [
-      "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=800&q=80",
+    "id": "prod-f01",
+    "title": "Patagonia Men's Better Sweater Fleece Jacket (Stonewash, Large)",
+    "slug": "patagonia-mens-better-sweater-jacket",
+    "description": "Classic full-zip fleece jacket made of 100% recycled polyester knitted fleece with dyed-with-low-impact process. Raglan sleeves for pack-wearing comfort.",
+    "price": 149,
+    "mrp": 169,
+    "brand": "Patagonia",
+    "stock": 35,
+    "rating": 4.8,
+    "reviewCount": 940,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80"
     ],
-    specs: {
-      Capacity: "64-ounce Container",
-      Motor: "2.0 Peak HP",
+    "specs": {
+      "Brand": "Patagonia",
+      "Material": "100% Recycled Polyester",
+      "Fit": "Regular Fit",
+      "Closure": "Full-zip"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h4",
-    title: "iRobot Roomba j7+ Self-Emptying Robot Vacuum",
-    slug: "irobot-roomba-j7-plus-robot-vacuum",
-    description: "Identifies and avoids pet waste and charging cables with PrecisionVision Navigation. Automatically empties into Clean Base holding up to 60 days of debris.",
-    price: 599.0,
-    mrp: 799.99,
-    category: "Home & Kitchen",
-    brand: "iRobot",
-    stock: 16,
-    rating: 4.5,
-    reviewCount: 1120,
-    images: [
-      "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=800&q=80",
+    "id": "prod-f02",
+    "title": "On Cloud 5 Men's Running Shoes (All Black, Size 10.5)",
+    "slug": "on-cloud-5-mens-running-shoes",
+    "description": "The fan-favorite re-engineered with 44% recycled content. Features CloudTec in Zero-Gravity foam for soft, cushioned landings and Speedboard for forward momentum.",
+    "price": 139.99,
+    "mrp": 149.99,
+    "brand": "On",
+    "stock": 48,
+    "rating": 4.7,
+    "reviewCount": 1620,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80"
     ],
-    specs: {
-      Navigation: "PrecisionVision AI",
-      CleanBase: "Automatic Dirt Disposal",
+    "specs": {
+      "Brand": "On",
+      "Cushioning": "CloudTec Zero-Gravity",
+      "Lacing": "Speed Lacing System",
+      "Weight": "250g"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h5",
-    title: "All-Clad D3 10-Piece Stainless Steel Cookware Set",
-    slug: "all-clad-d3-10-piece-cookware-set",
-    description: "Classic 3-ply bonded construction with responsive aluminum core bonded with durable stainless steel for even heat distribution. Induction compatible and oven safe up to 600°F.",
-    price: 699.99,
-    mrp: 899.99,
-    category: "Home & Kitchen",
-    brand: "All-Clad",
-    stock: 10,
-    rating: 4.9,
-    reviewCount: 650,
-    images: [
-      "https://images.unsplash.com/photo-1584990347449-a2e4526df643?w=800&q=80",
+    "id": "prod-f03",
+    "title": "Seiko 5 Sports Automatic Stainless Steel Watch (SRPD55K1)",
+    "slug": "seiko-5-sports-automatic-watch",
+    "description": "Heritage mechanical sports timepiece with 24-jewel automatic 4R36 caliber movement. Hardlex crystal, LumiBrite hands, and 100m water resistance.",
+    "price": 245,
+    "mrp": 295,
+    "brand": "Seiko",
+    "stock": 25,
+    "rating": 4.8,
+    "reviewCount": 780,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&q=80"
     ],
-    specs: {
-      Pieces: "10-Piece Set",
-      Construction: "Tri-Ply Stainless Steel",
+    "specs": {
+      "Brand": "Seiko",
+      "Caliber": "4R36 Automatic",
+      "CaseDiameter": "42.5mm",
+      "WaterResistance": "100 Meters"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h6",
-    title: "Fellow Stagg EKG Electric Gooseneck Kettle (0.9L)",
-    slug: "fellow-stagg-ekg-electric-kettle",
-    description: "For pour-over coffee connoisseurs. PID temperature controller maintains chosen temperature for up to 60 minutes. Precision pour spout prevents drips and balances water flow.",
-    price: 165.0,
-    mrp: 195.0,
-    category: "Home & Kitchen",
-    brand: "Fellow",
-    stock: 35,
-    rating: 4.7,
-    reviewCount: 840,
-    images: [
-      "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80",
+    "id": "prod-f04",
+    "title": "Ray-Ban Classic Polarized Aviator Sunglasses (Gold / Green)",
+    "slug": "ray-ban-classic-aviator-sunglasses",
+    "description": "Iconic teardrop shape with crystal polarized green lenses that block 99% of reflected light. Durable lightweight metal frame with adjustable silicone nose pads.",
+    "price": 178,
+    "mrp": 221,
+    "brand": "Ray-Ban",
+    "stock": 50,
+    "rating": 4.6,
+    "reviewCount": 3100,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&q=80"
     ],
-    specs: {
-      Capacity: "0.9 Liters",
-      Power: "1200 Watts",
+    "specs": {
+      "Brand": "Ray-Ban",
+      "LensType": "Polarized Crystal",
+      "Frame": "Metal Gold",
+      "UVProtection": "100% UV400"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h7",
-    title: "Lodge 10.25-inch Pre-Seasoned Cast Iron Skillet",
-    slug: "lodge-cast-iron-skillet-10-inch",
-    description: "The essential American kitchen tool. Seasoned with 100% natural vegetable oil for an easy-release finish that improves with every use. Unmatched heat retention and even heating.",
-    price: 24.9,
-    mrp: 34.25,
-    category: "Home & Kitchen",
-    brand: "Lodge",
-    stock: 120,
-    rating: 4.8,
-    reviewCount: 8920,
-    images: [
-      "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=800&q=80",
+    "id": "prod-f05",
+    "title": "Bellroy Transit Urban Work Backpack 20L (Nightsky)",
+    "slug": "bellroy-transit-work-backpack-20l",
+    "description": "Sleek commuter backpack designed with dedicated 16-inch laptop compartment, hidden external zip pockets, contoured back panel, and water-resistant recycled fabric.",
+    "price": 199,
+    "mrp": 239,
+    "brand": "Bellroy",
+    "stock": 30,
+    "rating": 4.7,
+    "reviewCount": 410,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80"
     ],
-    specs: {
-      Material: "Pre-Seasoned Cast Iron",
-      Diameter: "10.25 Inches",
+    "specs": {
+      "Brand": "Bellroy",
+      "Capacity": "20 Liters",
+      "LaptopSize": "Up to 16 Inches",
+      "Material": "Dura-weave Recycled"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h8",
-    title: "Brooklinen Luxe Sateen 4-Piece Queen Bed Sheet Set",
-    slug: "brooklinen-luxe-sateen-bed-sheets-queen",
-    description: "480-thread-count long-staple cotton in a luxurious sateen weave. Exceptionally silky, breathable, and buttery smooth. Includes flat sheet, fitted sheet, and 2 pillowcases.",
-    price: 159.0,
-    mrp: 189.0,
-    category: "Home & Kitchen",
-    brand: "Brooklinen",
-    stock: 44,
-    rating: 4.6,
-    reviewCount: 1450,
-    images: [
-      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
+    "id": "prod-f06",
+    "title": "The North Face Women's Recon Commuter Backpack (TNF Black)",
+    "slug": "the-north-face-womens-recon-backpack",
+    "description": "Iconic backpack updated with women-specific shoulder straps and FlexVent suspension certified by the American Chiropractic Association. Front stretch mesh pocket.",
+    "price": 109,
+    "mrp": 129,
+    "brand": "The North Face",
+    "stock": 40,
+    "rating": 4.8,
+    "reviewCount": 2200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?w=800&q=80"
     ],
-    specs: {
-      Material: "100% Long-Staple Cotton",
-      Size: "Queen",
+    "specs": {
+      "Brand": "The North Face",
+      "Volume": "30 Liters",
+      "Fit": "Women's FlexVent",
+      "Warranty": "Lifetime"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h9",
-    title: "KitchenAid Artisan Series 5-Quart Stand Mixer",
-    slug: "kitchenaid-artisan-stand-mixer-5-quart",
-    description: "Iconic tilt-head stand mixer with 10 speeds and 59-point planetary mixing action. Includes 5-quart stainless steel bowl with comfortable handle, flat beater, dough hook, and wire whip.",
-    price: 379.99,
-    mrp: 449.99,
-    category: "Home & Kitchen",
-    brand: "KitchenAid",
-    stock: 20,
-    rating: 4.9,
-    reviewCount: 4120,
-    images: [
-      "https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=800&q=80",
+    "id": "prod-f07",
+    "title": "Levi's Men's 511 Slim Fit Stretch Jeans (Clean Dark)",
+    "slug": "levis-mens-511-slim-fit-jeans",
+    "description": "Modern slim with room to move. Added stretch for all-day mobility. Sits below the waist with a slim leg from hip to ankle.",
+    "price": 59.99,
+    "mrp": 69.5,
+    "brand": "Levi's",
+    "stock": 75,
+    "rating": 4.5,
+    "reviewCount": 14200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&q=80"
     ],
-    specs: {
-      Capacity: "5 Quarts",
-      Speeds: "10 Speeds",
+    "specs": {
+      "Brand": "Levi's",
+      "Material": "99% Cotton, 1% Elastane",
+      "LegOpening": "14.5 Inches",
+      "Rise": "10.25 Inches"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-h10",
-    title: "OXO Good Grips 15-Piece Everyday Kitchen Utensil Set",
-    slug: "oxo-good-grips-15-piece-utensil-set",
-    description: "Comprehensive kitchen tool set featuring nylon spoons, turner, silicone spatula, swivel peeler, can opener, pizza wheel, and stainless steel rotating utensil holder.",
-    price: 79.99,
-    mrp: 99.99,
-    category: "Home & Kitchen",
-    brand: "OXO",
-    stock: 65,
-    rating: 4.7,
-    reviewCount: 1980,
-    images: [
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&q=80",
+    "id": "prod-f08",
+    "title": "Fossil Men's Derrick RFID Blocking Leather Bifold Wallet (Brown)",
+    "slug": "fossil-mens-derrick-leather-wallet",
+    "description": "100% genuine full-grain leather wallet with built-in RFID lining that protects your credit card chips from unwarranted remote scans.",
+    "price": 45,
+    "mrp": 55,
+    "brand": "Fossil",
+    "stock": 85,
+    "rating": 4.7,
+    "reviewCount": 5200,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80"
     ],
-    specs: {
-      Pieces: "15 Tools",
-      "Dishwasher Safe": "Yes",
+    "specs": {
+      "Brand": "Fossil",
+      "Material": "100% Genuine Leather",
+      "Slots": "8 Card Slots, 2 Slip Pockets",
+      "Protection": "RFID"
     },
-  },
-
-  // --- Books ---
-  {
-    id: "prod-b1",
-    title: "Clean Code: A Handbook of Agile Software Craftsmanship",
-    slug: "clean-code-robert-martin",
-    description: "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. Master software engineer Robert C. Martin presents a revolutionary paradigm with best practices for writing clean, readable code.",
-    price: 38.5,
-    mrp: 54.99,
-    category: "Books",
-    brand: "Prentice Hall",
-    stock: 90,
-    rating: 4.8,
-    reviewCount: 5120,
-    images: [
-      "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?w=800&q=80",
-    ],
-    specs: {
-      Author: "Robert C. Martin",
-      Pages: "464 Pages",
-      Format: "Paperback",
-    },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-b2",
-    title: "The Pragmatic Programmer: Your Journey to Mastery (20th Anniv)",
-    slug: "the-pragmatic-programmer-20th-anniversary",
-    description: "Written as a series of self-contained sections and filled with classic and fresh anecdotes, thoughtful examples, and interesting analogies, The Pragmatic Programmer illustrates the best practices and major pitfalls of many different aspects of software development.",
-    price: 42.0,
-    mrp: 59.99,
-    category: "Books",
-    brand: "Addison-Wesley",
-    stock: 75,
-    rating: 4.9,
-    reviewCount: 3820,
-    images: [
-      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80",
+    "id": "prod-f09",
+    "title": "Adidas Originals Stan Smith Classic Leather Sneakers (White / Green)",
+    "slug": "adidas-originals-stan-smith-sneakers",
+    "description": "Timeless tennis silhouette crafted from premium synthetic leather with perforated 3-Stripes and iconic green Stan Smith heel tab.",
+    "price": 85,
+    "mrp": 100,
+    "brand": "Adidas",
+    "stock": 65,
+    "rating": 4.6,
+    "reviewCount": 7800,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80"
     ],
-    specs: {
-      Author: "David Thomas, Andrew Hunt",
-      Pages: "352 Pages",
+    "specs": {
+      "Brand": "Adidas",
+      "Upper": "Synthetic Leather",
+      "Outsole": "Rubber Cupsole",
+      "Fit": "Standard"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-b3",
-    title: "Designing Data-Intensive Applications: The Big Ideas",
-    slug: "designing-data-intensive-applications-kleppmann",
-    description: "Data is at the center of many challenges in system design today. Martin Kleppmann helps you navigate the diverse landscape of databases, stream processing, consensus algorithms, and distributed data systems.",
-    price: 44.99,
-    mrp: 59.99,
-    category: "Books",
-    brand: "O'Reilly Media",
-    stock: 60,
-    rating: 4.9,
-    reviewCount: 4610,
-    images: [
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80",
+    "id": "prod-f10",
+    "title": "Tommy Hilfiger Men's Classic Oxford Long Sleeve Button Down Shirt",
+    "slug": "tommy-hilfiger-mens-oxford-shirt",
+    "description": "Pure cotton Oxford weave shirt with button-down collar, chest pocket, and embroidered flag logo. Pre-washed for a soft broken-in feel.",
+    "price": 54.5,
+    "mrp": 69.5,
+    "brand": "Tommy Hilfiger",
+    "stock": 45,
+    "rating": 4.5,
+    "reviewCount": 1980,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80"
     ],
-    specs: {
-      Author: "Martin Kleppmann",
-      Pages: "616 Pages",
+    "specs": {
+      "Brand": "Tommy Hilfiger",
+      "Fabric": "100% Breathable Cotton",
+      "Collar": "Button-Down",
+      "Cuff": "Adjustable Button"
     },
+    "category": "Fashion",
+    "department": "Fashion"
   },
   {
-    id: "prod-b4",
-    title: "Project Hail Mary: A Novel by Andy Weir",
-    slug: "project-hail-mary-andy-weir",
-    description: "Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the earth itself are doomed. Except right now, he doesn't know that. A breathtaking sci-fi adventure from the author of The Martian.",
-    price: 18.99,
-    mrp: 28.99,
-    category: "Books",
-    brand: "Ballantine Books",
-    stock: 85,
-    rating: 4.9,
-    reviewCount: 12400,
-    images: [
-      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80",
+    "id": "prod-h01",
+    "title": "Ninja AF101 4-Quart Digital Air Fryer (Crisp, Roast, Dehydrate)",
+    "slug": "ninja-af101-digital-air-fryer",
+    "description": "Air fry with up to 75% less fat than traditional frying methods. 4-quart ceramic-coated nonstick basket fits 2 lbs of french fries. Wide temperature range 105°F to 400°F.",
+    "price": 89.99,
+    "mrp": 129.99,
+    "brand": "Ninja",
+    "stock": 65,
+    "rating": 4.8,
+    "reviewCount": 42100,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1585515320310-259814833e62?w=800&q=80"
     ],
-    specs: {
-      Author: "Andy Weir",
-      Pages: "496 Pages",
+    "specs": {
+      "Brand": "Ninja",
+      "Capacity": "4 Quarts",
+      "Wattage": "1500 Watts",
+      "DishwasherSafe": "Yes"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b5",
-    title: "Atomic Habits: An Easy & Proven Way to Build Good Habits",
-    slug: "atomic-habits-james-clear",
-    description: "No matter your goals, Atomic Habits offers a proven framework for improving every day. James Clear, one of the world's leading experts on habit formation, reveals practical strategies that will teach you exactly how to form good habits and break bad ones.",
-    price: 14.99,
-    mrp: 27.0,
-    category: "Books",
-    brand: "Avery",
-    stock: 140,
-    rating: 4.9,
-    reviewCount: 28400,
-    images: [
-      "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=800&q=80",
+    "id": "prod-h02",
+    "title": "Breville Barista Express Espresso Machine (Brushed Stainless Steel)",
+    "slug": "breville-barista-express-espresso-machine",
+    "description": "Create third wave specialty coffee at home using the 4 keys formula. Integrated precision conical burr grinder delivers on-demand ground coffee directly into the portafilter.",
+    "price": 699.95,
+    "mrp": 749.95,
+    "brand": "Breville",
+    "stock": 20,
+    "rating": 4.8,
+    "reviewCount": 16500,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&q=80"
     ],
-    specs: {
-      Author: "James Clear",
-      Pages: "320 Pages",
+    "specs": {
+      "Brand": "Breville",
+      "Pressure": "15 Bar Italian Pump",
+      "TankSize": "67 oz",
+      "Grinder": "Integrated Conical Burr"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b6",
-    title: "Sapiens: A Brief History of Humankind",
-    slug: "sapiens-brief-history-of-humankind-harari",
-    description: "100,000 years ago, at least six human species inhabited the earth. Today there is just one: Homo sapiens. What happened to the others? And what may happen to us? Yuval Noah Harari explores who we are, how we got here, and where we're going.",
-    price: 16.5,
-    mrp: 24.99,
-    category: "Books",
-    brand: "Harper",
-    stock: 80,
-    rating: 4.7,
-    reviewCount: 9200,
-    images: [
-      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800&q=80",
+    "id": "prod-h03",
+    "title": "iRobot Roomba j7+ Self-Emptying Robot Vacuum with Obstacle Avoidance",
+    "slug": "irobot-roomba-j7-plus-robot-vacuum",
+    "description": "Identifies and avoids pet waste and cords using PrecisionVision Navigation. Automatically empties into the Clean Base Automatic Dirt Disposal holding 60 days of debris.",
+    "price": 599,
+    "mrp": 799.99,
+    "brand": "iRobot",
+    "stock": 18,
+    "rating": 4.6,
+    "reviewCount": 3820,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80"
     ],
-    specs: {
-      Author: "Yuval Noah Harari",
-      Pages: "464 Pages",
+    "specs": {
+      "Brand": "iRobot",
+      "BinCapacity": "60 Days Enclosed",
+      "Navigation": "PrecisionVision AI",
+      "SmartApp": "Alexa / Google"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b7",
-    title: "The Psychology of Money: Timeless lessons on wealth and greed",
-    slug: "the-psychology-of-money-morgan-housel",
-    description: "Doing well with money isn't necessarily about what you know. It's about how you behave. And behavior is hard to teach, even to really smart people. Morgan Housel shares 19 short stories exploring the strange ways people think about money.",
-    price: 13.99,
-    mrp: 19.99,
-    category: "Books",
-    brand: "Harriman House",
-    stock: 95,
-    rating: 4.8,
-    reviewCount: 15300,
-    images: [
-      "https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=800&q=80",
+    "id": "prod-h04",
+    "title": "Le Creuset Enameled Cast Iron Signature Round Dutch Oven (5.5 Qt, Cerise)",
+    "slug": "le-creuset-enameled-round-dutch-oven",
+    "description": "Indispensable French culinary classic for slow-cooking, braising, and baking bread. Superior heat distribution and retention. Colorful exterior enamel resists chipping and cracking.",
+    "price": 419.95,
+    "mrp": 460,
+    "brand": "Le Creuset",
+    "stock": 15,
+    "rating": 4.9,
+    "reviewCount": 4100,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1584990347449-30113c418047?w=800&q=80"
     ],
-    specs: {
-      Author: "Morgan Housel",
-      Pages: "256 Pages",
+    "specs": {
+      "Brand": "Le Creuset",
+      "Capacity": "5.5 Quarts",
+      "Material": "Enameled Cast Iron",
+      "HeatSource": "Oven safe to 500°F"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b8",
-    title: "To Kill a Mockingbird: 60th Anniversary Edition",
-    slug: "to-kill-a-mockingbird-harper-lee",
-    description: "The unforgettable novel of a childhood in a sleepy Southern town and the crisis of conscience that rocked it. Harper Lee's Pulitzer Prize-winning masterpiece of honor and injustice in the deep South.",
-    price: 11.49,
-    mrp: 16.99,
-    category: "Books",
-    brand: "Harper",
-    stock: 110,
-    rating: 4.8,
-    reviewCount: 18900,
-    images: [
-      "https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=800&q=80",
+    "id": "prod-h05",
+    "title": "Vitamix 5200 Professional-Grade Blender (64 oz Container, Black)",
+    "slug": "vitamix-5200-professional-blender",
+    "description": "The professional standard for heavy-duty blending. Aircraft-grade stainless steel blades friction-heat cold ingredients into steaming hot soup in six minutes.",
+    "price": 499.95,
+    "mrp": 549.95,
+    "brand": "Vitamix",
+    "stock": 22,
+    "rating": 4.8,
+    "reviewCount": 9200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=800&q=80"
     ],
-    specs: {
-      Author: "Harper Lee",
-      Pages: "336 Pages",
+    "specs": {
+      "Brand": "Vitamix",
+      "Container": "64 Ounces Low-Profile",
+      "Motor": "2.0 Peak HP",
+      "Speeds": "Variable 10 Speed"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b9",
-    title: "System Design Interview – An Insider's Guide (Volume 1)",
-    slug: "system-design-interview-alex-xu",
-    description: "The system design interview is considered the most difficult aspect of software engineering interviews. This book provides a step-by-step framework to approach design challenges and covers real questions asked at top tech companies.",
-    price: 36.99,
-    mrp: 49.99,
-    category: "Books",
-    brand: "Independently published",
-    stock: 65,
-    rating: 4.7,
-    reviewCount: 3140,
-    images: [
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+    "id": "prod-h06",
+    "title": "Wüsthof Classic 8-Inch Chef's Knife (Precision Forged High Carbon)",
+    "slug": "wusthof-classic-8-inch-chefs-knife",
+    "description": "Forged from a single block of high-carbon stainless steel in Solingen, Germany. Precision Edge Technology (PEtec) yields a blade that is 20% sharper with twice the retention.",
+    "price": 170,
+    "mrp": 195,
+    "brand": "Wüsthof",
+    "stock": 35,
+    "rating": 4.9,
+    "reviewCount": 3100,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1593618998160-e34014e67546?w=800&q=80"
     ],
-    specs: {
-      Author: "Alex Xu",
-      Pages: "320 Pages",
+    "specs": {
+      "Brand": "Wüsthof",
+      "BladeLength": "8 Inches",
+      "Origin": "Solingen, Germany",
+      "Hardness": "58 HRC"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
   {
-    id: "prod-b10",
-    title: "Steve Jobs: The Exclusive Biography by Walter Isaacson",
-    slug: "steve-jobs-walter-isaacson",
-    description: "Based on more than forty interviews with Steve Jobs conducted over two years—as well as interviews with more than a hundred family members, friends, adversaries, competitors, and colleagues—Walter Isaacson has written a riveting story of the roller-coaster life and searingly intense personality of a creative entrepreneur.",
-    price: 21.0,
-    mrp: 35.0,
-    category: "Books",
-    brand: "Simon & Schuster",
-    stock: 50,
-    rating: 4.7,
-    reviewCount: 7600,
-    images: [
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80",
+    "id": "prod-h07",
+    "title": "Cuisinart 4-Slice Custom Classic Metal Toaster (Brushed Stainless)",
+    "slug": "cuisinart-4-slice-metal-toaster",
+    "description": "Dual control panels let you toast two different items simultaneously. 1.5-inch wide slots accommodate artisan breads, bagels, and pastries.",
+    "price": 69.95,
+    "mrp": 89.95,
+    "brand": "Cuisinart",
+    "stock": 50,
+    "rating": 4.5,
+    "reviewCount": 11200,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=800&q=80"
     ],
-    specs: {
-      Author: "Walter Isaacson",
-      Pages: "656 Pages",
+    "specs": {
+      "Brand": "Cuisinart",
+      "Slots": "4 Extra Wide Slots",
+      "Controls": "Dual Independent Panels",
+      "ShadeSettings": "6 Settings"
     },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
   },
+  {
+    "id": "prod-h08",
+    "title": "All-Clad D3 Stainless Steel 10-Piece Cookware Set",
+    "slug": "all-clad-d3-stainless-cookware-set",
+    "description": "Classic tri-ply construction made in the USA. Alternating layers of stainless steel and responsive aluminum core deliver warp-free strength and even heating.",
+    "price": 699.99,
+    "mrp": 899.99,
+    "brand": "All-Clad",
+    "stock": 12,
+    "rating": 4.8,
+    "reviewCount": 2800,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1584990347449-30113c418047?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "All-Clad",
+      "Pieces": "10 Piece Set",
+      "Core": "Tri-Ply Aluminum Core",
+      "OvenSafe": "Up to 600°F"
+    },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
+  },
+  {
+    "id": "prod-h09",
+    "title": "Brita Elite Grand Water Filter Pitcher (10-Cup Capacity)",
+    "slug": "brita-elite-grand-water-pitcher",
+    "description": "Reduces 99% of Lead, Chlorine, Mercury, and Cadmium from tap water. One Brita Elite filter lasts for 6 months or 120 gallons, replacing up to 900 single-use bottles.",
+    "price": 38.99,
+    "mrp": 44.99,
+    "brand": "Brita",
+    "stock": 80,
+    "rating": 4.6,
+    "reviewCount": 14500,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Brita",
+      "Capacity": "10 Cups",
+      "FilterType": "Brita Elite Longlast",
+      "Indicator": "SmartLight LED"
+    },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
+  },
+  {
+    "id": "prod-h10",
+    "title": "Coop Home Goods Original Adjustable Memory Foam Pillow (Queen)",
+    "slug": "coop-home-goods-adjustable-pillow",
+    "description": "GREENGUARD Gold and CertiPUR-US certified. Fully adjustable shredded memory foam filling lets you add or remove fill to achieve your perfect ergonomic loft.",
+    "price": 72,
+    "mrp": 89,
+    "brand": "Coop Home Goods",
+    "stock": 70,
+    "rating": 4.7,
+    "reviewCount": 38900,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Coop Home Goods",
+      "Size": "Queen (20 x 30 Inches)",
+      "Fill": "Oeko-Tex Shredded Foam",
+      "Cover": "Lulltra Bamboo"
+    },
+    "category": "Home & Kitchen",
+    "department": "Home & Kitchen"
+  },
+  {
+    "id": "prod-b01",
+    "title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+    "slug": "clean-code-robert-martin",
+    "description": "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. Master software expert Robert C. Martin reveals battle-tested best practices.",
+    "price": 42.99,
+    "mrp": 54.99,
+    "brand": "Pearson",
+    "stock": 60,
+    "rating": 4.7,
+    "reviewCount": 6800,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Robert C. Martin",
+      "Format": "Paperback",
+      "Pages": "464 Pages",
+      "Publisher": "Prentice Hall"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b02",
+    "title": "Designing Data-Intensive Applications: The Big Ideas Behind Reliable Systems",
+    "slug": "designing-data-intensive-applications-kleppmann",
+    "description": "Data is at the center of many challenges in system design today. Martin Kleppmann helps you navigate the diverse landscape of databases, distributed caches, and streaming frameworks.",
+    "price": 46.5,
+    "mrp": 59.99,
+    "brand": "O'Reilly Media",
+    "stock": 55,
+    "rating": 4.9,
+    "reviewCount": 5400,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Martin Kleppmann",
+      "Format": "Paperback",
+      "Pages": "616 Pages",
+      "Publisher": "O'Reilly"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b03",
+    "title": "The Psychology of Money: Timeless Lessons on Wealth, Greed, and Happiness",
+    "slug": "the-psychology-of-money-morgan-housel",
+    "description": "Doing well with money isn't necessarily about what you know. It's about how you behave. Morgan Housel shares 19 short stories exploring the strange ways people think about money.",
+    "price": 18.69,
+    "mrp": 24.99,
+    "brand": "Harriman House",
+    "stock": 90,
+    "rating": 4.8,
+    "reviewCount": 48900,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Morgan Housel",
+      "Format": "Hardcover",
+      "Pages": "256 Pages",
+      "Publisher": "Harriman House"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b04",
+    "title": "Deep Work: Rules for Focused Success in a Distracted World",
+    "slug": "deep-work-cal-newport",
+    "description": "Deep work is the ability to focus without distraction on a cognitively demanding task. Cal Newport blends cultural criticism and actionable advice to optimize mental concentration.",
+    "price": 17.99,
+    "mrp": 28,
+    "brand": "Grand Central Publishing",
+    "stock": 75,
+    "rating": 4.6,
+    "reviewCount": 19800,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Cal Newport",
+      "Format": "Hardcover",
+      "Pages": "304 Pages",
+      "Publisher": "Grand Central"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b05",
+    "title": "Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones",
+    "slug": "atomic-habits-james-clear",
+    "description": "No matter your goals, Atomic Habits offers a proven framework for improving every day. James Clear reveals practical strategies on small changes that deliver remarkable results.",
+    "price": 13.79,
+    "mrp": 27,
+    "brand": "Avery",
+    "stock": 120,
+    "rating": 4.8,
+    "reviewCount": 128000,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "#1 Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "James Clear",
+      "Format": "Hardcover",
+      "Pages": "320 Pages",
+      "Publisher": "Avery"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b06",
+    "title": "Dune (The Dune Chronicles, Book 1) Deluxe Edition",
+    "slug": "dune-deluxe-edition-frank-herbert",
+    "description": "Frank Herbert's masterwork - the epic tale of Paul Atreides and the desert planet Arrakis. A landmark triumph of world-building and winner of the Hugo and Nebula Awards.",
+    "price": 24.99,
+    "mrp": 35,
+    "brand": "Ace Books",
+    "stock": 45,
+    "rating": 4.8,
+    "reviewCount": 22400,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1506466010722-395aa2bef877?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Frank Herbert",
+      "Format": "Deluxe Hardcover",
+      "Pages": "688 Pages",
+      "Publisher": "Ace"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b07",
+    "title": "Project Hail Mary: A Novel by Andy Weir",
+    "slug": "project-hail-mary-andy-weir",
+    "description": "Ryland Grace is the sole survivor on a desperate last-chance interstellar mission to save humanity from extinction. A triumphant celebration of science, intellect, and friendship.",
+    "price": 15.99,
+    "mrp": 28.99,
+    "brand": "Ballantine Books",
+    "stock": 55,
+    "rating": 4.9,
+    "reviewCount": 64000,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Andy Weir",
+      "Format": "Hardcover",
+      "Pages": "496 Pages",
+      "Publisher": "Ballantine"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b08",
+    "title": "Thinking, Fast and Slow by Daniel Kahneman",
+    "slug": "thinking-fast-and-slow-kahneman",
+    "description": "Nobel Memorial Prize winner Daniel Kahneman takes us on a groundbreaking tour of the mind, explaining the two cognitive systems that drive the way we think and decide.",
+    "price": 14.29,
+    "mrp": 20,
+    "brand": "Farrar, Straus and Giroux",
+    "stock": 65,
+    "rating": 4.6,
+    "reviewCount": 38200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Daniel Kahneman",
+      "Format": "Paperback",
+      "Pages": "512 Pages",
+      "Publisher": "FSG"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b09",
+    "title": "The Pragmatic Programmer: Your Journey To Mastery (20th Anniversary Edition)",
+    "slug": "the-pragmatic-programmer-thomas-hunt",
+    "description": "One of the most significant books in modern software engineering. Illustrates best practices and major pitfalls across code architecture, career mastery, and test-driven development.",
+    "price": 49.99,
+    "mrp": 59.99,
+    "brand": "Addison-Wesley",
+    "stock": 35,
+    "rating": 4.8,
+    "reviewCount": 4200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "David Thomas, Andrew Hunt",
+      "Format": "Hardcover",
+      "Pages": "352 Pages",
+      "Publisher": "Addison-Wesley"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-b10",
+    "title": "Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking",
+    "slug": "salt-fat-acid-heat-samin-nosrat",
+    "description": "Visionary cookbook by chef Samin Nosrat. Master the four simple elements of cooking to instinctively elevate any dish without needing step-by-step recipes.",
+    "price": 23.49,
+    "mrp": 37.5,
+    "brand": "Simon & Schuster",
+    "stock": 50,
+    "rating": 4.9,
+    "reviewCount": 29800,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1589998059171-988d887df646?w=800&q=80"
+    ],
+    "specs": {
+      "Author": "Samin Nosrat",
+      "Format": "Hardcover",
+      "Pages": "480 Pages",
+      "Publisher": "Simon & Schuster"
+    },
+    "category": "Books",
+    "department": "Books"
+  },
+  {
+    "id": "prod-p01",
+    "title": "Philips Sonicare DiamondClean Smart 9500 Electric Toothbrush (White)",
+    "slug": "philips-sonicare-diamondclean-9500",
+    "description": "Complete oral care system with smart sensors and real-time personalized feedback via mobile app. Up to 10x more plaque removal and 7x healthier gums in 2 weeks.",
+    "price": 219.96,
+    "mrp": 279.96,
+    "brand": "Philips",
+    "stock": 40,
+    "rating": 4.7,
+    "reviewCount": 7800,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1559591937-e620583a45c7?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Philips Sonicare",
+      "Modes": "5 Cleaning Modes",
+      "Speeds": "3 Intensities",
+      "Charging": "Glass Cup + Travel Case"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p02",
+    "title": "Dyson Supersonic Hair Dryer (Iron / Fuchsia)",
+    "slug": "dyson-supersonic-hair-dryer",
+    "description": "Engineered for different hair types. Intelligent heat control measures air temperature 40 times per second to prevent extreme heat damage and protect natural shine.",
+    "price": 429.99,
+    "mrp": 449.99,
+    "brand": "Dyson",
+    "stock": 18,
+    "rating": 4.7,
+    "reviewCount": 4200,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Dyson",
+      "Power": "1600 Watts",
+      "Motor": "Dyson Digital V9",
+      "Attachments": "5 Styling Attachments"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p03",
+    "title": "CeraVe Moisturizing Cream with Hyaluronic Acid and 3 Essential Ceramides",
+    "slug": "cerave-moisturizing-cream-19oz",
+    "description": "Developed with dermatologists. 24-hour hydration barrier restoration with MVE Delivery Technology. Rich, velvety, non-greasy, and fragrance-free.",
+    "price": 17.78,
+    "mrp": 19.99,
+    "brand": "CeraVe",
+    "stock": 120,
+    "rating": 4.8,
+    "reviewCount": 94000,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "#1 Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "CeraVe",
+      "Size": "19 Ounces",
+      "SkinType": "Dry to Very Dry",
+      "Formula": "Non-comedogenic, Fragrance-Free"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p04",
+    "title": "Braun Series 9 PRO+ Electric Shaver with 6-in-1 SmartCare Center",
+    "slug": "braun-series-9-pro-plus-shaver",
+    "description": "Braun's most advanced electric razor. 5 synchronized shaving elements capture more hairs in one stroke. Sonic Technology glides gently over skin.",
+    "price": 329.94,
+    "mrp": 379.99,
+    "brand": "Braun",
+    "stock": 22,
+    "rating": 4.6,
+    "reviewCount": 3100,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1621607512214-68297480165e?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Braun",
+      "Trimmer": "ProLift Trimmer",
+      "Battery": "60 Mins Li-Ion",
+      "Waterproof": "100% Waterproof"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p05",
+    "title": "SkinCeuticals C E Ferulic Combination Antioxidant Treatment (1 fl oz)",
+    "slug": "skinceuticals-c-e-ferulic-antioxidant",
+    "description": "Gold-standard daytime vitamin C serum delivering advanced environmental protection and visible anti-aging benefits. Neutralizes free radicals caused by UVA/UVB.",
+    "price": 182,
+    "mrp": 185,
+    "brand": "SkinCeuticals",
+    "stock": 30,
+    "rating": 4.8,
+    "reviewCount": 2890,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "SkinCeuticals",
+      "Volume": "1 Fl Oz / 30ml",
+      "Active": "15% L-Ascorbic Acid, 1% Alpha Tocopherol",
+      "Type": "Serum"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p06",
+    "title": "Asakuki 500ml Premium Essential Oil Diffuser with 7 LED Ambient Colors",
+    "slug": "asakuki-500ml-essential-oil-diffuser",
+    "description": "5-in-1 ultrasonic aromatherapy device. Features a 500ml easy-to-clean water tank, 7 distinct LED light colors, multiple mist nebulizer modes, and safety auto-switch.",
+    "price": 25.99,
+    "mrp": 35.99,
+    "brand": "Asakuki",
+    "stock": 85,
+    "rating": 4.5,
+    "reviewCount": 41200,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Best Seller",
+    "images": [
+      "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Asakuki",
+      "TankCapacity": "500 ml",
+      "RunTime": "Up to 16 Hours",
+      "BPAFree": "Yes"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p07",
+    "title": "La Roche-Posay Anthelios Melt-in Milk Sunscreen SPF 60 (5 fl oz)",
+    "slug": "la-roche-posay-anthelios-spf-60",
+    "description": "Multi-award winning broad-spectrum face and body sunscreen. Fast-absorbing, velvety texture formulated with Cell-Ox Shield antioxidant technology. Water resistant 80 mins.",
+    "price": 37.99,
+    "mrp": 39.99,
+    "brand": "La Roche-Posay",
+    "stock": 65,
+    "rating": 4.8,
+    "reviewCount": 18400,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Amazon's Choice",
+    "images": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "La Roche-Posay",
+      "SPF": "60 Broad Spectrum",
+      "Volume": "5 Fl Oz",
+      "WaterResistant": "80 Minutes"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p08",
+    "title": "Kiehl's Creamy Eye Treatment with Avocado (0.95 oz)",
+    "slug": "kiehls-creamy-eye-treatment-avocado",
+    "description": "Rich and creamy eye cream with avocado oil gently moisturizes the delicate under-eye area. Ophthalmologist- and dermatologist-tested for all skin types.",
+    "price": 60,
+    "mrp": 65,
+    "brand": "Kiehl's",
+    "stock": 45,
+    "rating": 4.6,
+    "reviewCount": 3900,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": null,
+    "images": [
+      "https://images.unsplash.com/photo-1512290900672-1f0236a0c5b3?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Kiehl's",
+      "Size": "0.95 Oz / 28g",
+      "KeyIngredient": "Avocado Oil, Beta-Carotene",
+      "Texture": "Rich Cream"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p09",
+    "title": "Bleu de Chanel Eau de Parfum Spray for Men (3.4 oz)",
+    "slug": "bleu-de-chanel-eau-de-parfum",
+    "description": "An ode to masculine freedom expressed in an aromatic-woody fragrance with a captivating trail. Notes of citrus, ambery cedar, and tonka bean.",
+    "price": 155,
+    "mrp": 175,
+    "brand": "Chanel",
+    "stock": 25,
+    "rating": 4.9,
+    "reviewCount": 5100,
+    "isPrime": true,
+    "isDeal": false,
+    "badge": "Overall Pick",
+    "images": [
+      "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "Chanel",
+      "Concentration": "Eau de Parfum",
+      "Volume": "3.4 Fl Oz / 100ml",
+      "Scent": "Woody Aromatic"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  },
+  {
+    "id": "prod-p10",
+    "title": "TheraGun PRO Plus Handheld Deep Tissue Percussive Massage Gun",
+    "slug": "theragun-pro-plus-massage-gun",
+    "description": "Ultimate recovery device combines proven 16mm percussive massage therapy with near-infrared LED light therapy, vibration, and heated massage attachments.",
+    "price": 599,
+    "mrp": 649,
+    "brand": "TheraBody",
+    "stock": 14,
+    "rating": 4.8,
+    "reviewCount": 1400,
+    "isPrime": true,
+    "isDeal": true,
+    "badge": "Limited time deal",
+    "images": [
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80"
+    ],
+    "specs": {
+      "Brand": "TheraBody",
+      "Amplitude": "16mm",
+      "Attachments": "6 Attachments",
+      "Motor": "QuietForce Technology"
+    },
+    "category": "Beauty & Health",
+    "department": "Beauty & Health"
+  }
 ];

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Trash2, Plus, Minus, Tag, Check, AlertCircle, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 export default function CartPage() {
   const router = useRouter();
@@ -14,7 +14,6 @@ export default function CartPage() {
   const currency = useCartStore((s) => s.currency);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
-  const clearCart = useCartStore((s) => s.clearCart);
   const coupons = useCartStore((s) => s.coupons);
   const applyCoupon = useCartStore((s) => s.applyCoupon);
   const removeCoupon = useCartStore((s) => s.removeCoupon);
@@ -62,14 +61,6 @@ export default function CartPage() {
     }
   };
 
-  // EASY_07: Mobile Viewport Action Overflow
-  // At a 375px mobile viewport width, the "Proceed to Checkout" button on cart page is clipped horizontally off-screen
-  const isMobileOverflowActive = isDefectActive("EASY_07_MOBILE_CHECKOUT_OVERFLOW");
-
-  // MED_08: Line Item Quantity Multiplication
-  // Increasing an item's quantity in cart updates quantity field, but leaves line-item subtotal at single-unit price
-  const isLineItemBugActive = isDefectActive("MED_08_CART_LINE_ITEM_QTY_MULTIPLICATION");
-
   if (items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-amazon-text">
@@ -102,14 +93,10 @@ export default function CartPage() {
 
           <div className="divide-y divide-gray-200">
             {items.map((item) => {
-              // Calculate row display price based on MED_08 defect
-              const displayedRowPrice = isLineItemBugActive
-                ? item.price // Bug: leaves line-item subtotal at single-unit price!
-                : item.price * item.quantity;
+              const displayedRowPrice = item.price;
 
               return (
                 <div key={item.productId} className="py-5 flex gap-4">
-                  {/* Thumbnail */}
                   <div className="h-28 w-28 shrink-0 bg-gray-50 rounded border border-gray-200 p-2 flex items-center justify-center">
                     <img
                       src={item.imageUrl}
@@ -118,7 +105,6 @@ export default function CartPage() {
                     />
                   </div>
 
-                  {/* Details */}
                   <div className="flex-1 space-y-2">
                     <div className="flex justify-between items-start">
                       <Link
@@ -135,7 +121,6 @@ export default function CartPage() {
                     <div className="text-xs text-green-700 font-semibold">In Stock</div>
                     <div className="text-[11px] text-gray-500">Eligible for FREE Shipping</div>
 
-                    {/* Quantity Controls & Delete */}
                     <div className="flex items-center gap-4 pt-2 text-xs">
                       <div className="flex items-center border border-gray-300 rounded overflow-hidden bg-gray-50">
                         <button
@@ -176,7 +161,6 @@ export default function CartPage() {
             })}
           </div>
 
-          {/* Subtotal Footer */}
           <div className="border-t border-gray-200 pt-4 flex justify-end items-baseline gap-2">
             <span className="text-sm text-gray-700">
               Subtotal ({totalItemCount} {totalItemCount === 1 ? "item" : "items"}):
@@ -187,7 +171,7 @@ export default function CartPage() {
           </div>
         </div>
 
-        {/* Right Column: Checkout Summary & Coupons (Cols 9-12) */}
+        {/* Right Column: Checkout Summary & Coupons */}
         <div className="lg:col-span-4 space-y-4">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 space-y-4">
             <div className="flex items-center gap-2 text-xs text-green-700 font-semibold bg-green-50 p-2.5 rounded border border-green-200">
@@ -209,14 +193,7 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Proceed to Checkout Button with EASY_07 mobile overflow defect */}
-            <div
-              className={`pt-2 ${
-                isMobileOverflowActive
-                  ? "min-w-[440px] overflow-visible" // EASY_07: Clips off-screen on 375px mobile screens!
-                  : "w-full"
-              }`}
-            >
+            <div className={`pt-2 ${UI_CONFIG.mobileCheckoutOverflowClass}`}>
               <button
                 onClick={() => router.push("/checkout")}
                 id="proceed-to-checkout-btn"
@@ -227,7 +204,6 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Promo Code Application Box (MED_07 & HARD_14) */}
           <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 space-y-3">
             <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5 uppercase tracking-wide">
               <Tag className="h-4 w-4 text-amazon-orange" />
@@ -268,7 +244,6 @@ export default function CartPage() {
               </div>
             )}
 
-            {/* Applied Coupons List */}
             {coupons.length > 0 && (
               <div className="space-y-1.5 pt-2 border-t border-gray-100">
                 <span className="text-[11px] font-bold text-gray-500 uppercase">
@@ -283,7 +258,7 @@ export default function CartPage() {
                       <span className="font-bold text-amber-900">{c.code}</span>
                       {c.appliedCount > 1 && (
                         <span className="ml-1 text-[10px] font-bold text-red-600 bg-red-100 px-1 rounded">
-                          x{c.appliedCount} 
+                          x{c.appliedCount}
                         </span>
                       )}
                     </div>

@@ -4,23 +4,17 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ShieldCheck,
-  CreditCard,
-  MapPin,
-  CheckCircle,
   HelpCircle,
   Lock,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
   const items = useCartStore((s) => s.items);
-  const currency = useCartStore((s) => s.currency);
   const getSubtotal = useCartStore((s) => s.getSubtotal);
   const getDiscountAmount = useCartStore((s) => s.getDiscountAmount);
   const clearCart = useCartStore((s) => s.clearCart);
@@ -35,9 +29,6 @@ export default function CheckoutPage() {
   const [state, setState] = useState("WA");
   const [zipCode, setZipCode] = useState("98109");
   const [selectedCountry, setSelectedCountry] = useState("United States");
-
-  // MED_09: Form Autofill Event Binding
-  // Populating shipping address via autofill leaves continue button disabled until manual keystrokes occur
   const [hasUserTyped, setHasUserTyped] = useState(false);
 
   // Step 2: Payment State
@@ -45,87 +36,44 @@ export default function CheckoutPage() {
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("12/28");
   const [cardCvv, setCardCvv] = useState("");
-
-  // EASY_09: Floating Tooltip Mouseout Handling
-  // Hovering over CVV info icon displays a tooltip that fails to dismiss upon cursor exit
   const [showCvvTooltip, setShowCvvTooltip] = useState(false);
 
-  // Order Submission & Debounce (MED_13)
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const subtotal = getSubtotal();
   const discount = getDiscountAmount();
 
-  // -------------------------------------------------------------
-  // USER REQUIREMENT 5: MERGED TAX LOGIC (MED_10 & HARD_15)
-  // -------------------------------------------------------------
-  const TAX_RATE = 0.08; // 8% sales tax
-
-  // 1. Determine taxable base (MED_10: pre-discount subtotal)
-  let taxableBase = subtotal;
-  if (!isDefectActive("MED_10_POST_DISCOUNT_TAX_CALCULATION")) {
-    taxableBase = Math.max(0, subtotal - discount);
-  }
-
-  // 2. Truncate taxable base if HARD_15 is active (drops taxable cents)
-  if (isDefectActive("HARD_15_TRUNCATION_TAX_EVASION")) {
-    taxableBase = Math.floor(taxableBase);
-  }
-
-  // 3. Final calculated tax
+  const TAX_RATE = 0.08;
+  const taxableBase = Math.floor(subtotal);
   const tax = Number((taxableBase * TAX_RATE).toFixed(2));
-  const shippingFee = 0; // Free shipping
+  const shippingFee = 0;
   const finalTotal = Math.max(0, subtotal - discount + tax + shippingFee);
 
-  // EASY_08: Shipping Country Dropdown State
-  // Selecting alternative country immediately reverts dropdown selection back to first option
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (isDefectActive("EASY_08_SHIPPING_COUNTRY_DROPDOWN")) {
-      setSelectedCountry("United States"); // Bug: Reverts back immediately!
+    if (UI_CONFIG.countrySelectResetOnBlur) {
+      setSelectedCountry("United States");
     } else {
       setSelectedCountry(e.target.value);
     }
   };
 
-  // MED_19: Whitespace Validation Bypass
-  // Checkout ZIP code required-field validation can be bypassed by entering a single whitespace character
-  const isZipValid = isDefectActive("MED_19_ZIP_WHITESPACE_VALIDATION_BYPASS")
-    ? zipCode.length > 0 // Bug: ' ' passes length check!
-    : zipCode.trim().length >= 5;
+  const isZipValid = zipCode.length > 0;
+  const isAddressFormValid = hasUserTyped && isZipValid && fullName.length > 0;
 
-  // MED_09 Address continue button disabled evaluation
-  const isAddressFormValid = isDefectActive("MED_09_AUTOFILL_CONTINUE_BUTTON_DISABLED")
-    ? hasUserTyped && isZipValid && fullName.length > 0
-    : fullName.trim().length > 0 && street.trim().length > 0 && isZipValid;
-
-  // MED_12: Card Field Formatting Space Handling
-  // Pasting card numbers with spaces into payment input counts whitespace toward maxlength restrictions
-  const cardMaxLength = isDefectActive("MED_12_CARD_FIELD_SPACE_TRUNCATION") ? 16 : 19;
-
-  // MED_11: Regional Currency Symbol Consistency
-  // Catalog displays prices in USD ($), but final checkout review step swaps symbol to EUR (€) without numeric conversion
-  const isCurrencySwapActive = isDefectActive("MED_11_REGIONAL_CURRENCY_SYMBOL_SWAP");
-  const displayCurrencySymbol = isCurrencySwapActive ? "€" : "$";
+  const cardMaxLength = 16;
+  const displayCurrencySymbol = "€";
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
-
-    // MED_13: Submission Button Debouncing
-    // Rapidly clicking "Place Order" fails to disable control during network transport, creating duplicate orders
-    if (!isDefectActive("MED_13_ORDER_SUBMISSION_DEBOUNCE_MISSING")) {
-      if (isSubmitting) return;
-      setIsSubmitting(true);
-    }
+    setIsSubmitting(true);
 
     try {
-      // HARD_01: Order Payload Pricing Authority
-      // Sends unitPrice in payload which backend accepts if HARD_01 is active
       const payload = {
         userId: user?.id || "guest",
         items: items.map((i) => ({
           productId: i.productId,
           title: i.title,
-          unitPrice: i.price, // HARD_01 pricing authority payload
+          unitPrice: i.price,
           quantity: i.quantity,
           imageUrl: i.imageUrl,
         })),
@@ -166,7 +114,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 text-amazon-text">
-      {/* Checkout Minimal Header */}
+      {/* Checkout Header */}
       <div className="flex items-center justify-between border-b border-gray-300 pb-4 mb-8">
         <Link href="/" className="font-black text-2xl tracking-tight text-gray-900">
           amazon<span className="text-amazon-orange text-sm">.com</span>
@@ -203,7 +151,7 @@ export default function CheckoutPage() {
             {activeStep === 1 ? (
               <div
                 className="mt-4 space-y-4"
-                onKeyDown={() => setHasUserTyped(true)} // MED_09 keydown listener
+                onKeyDown={() => setHasUserTyped(true)}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -253,7 +201,6 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    {/* ZIP Code with MED_19 whitespace bypass */}
                     <label className="text-xs font-bold text-gray-700 block mb-1">
                       ZIP Code
                     </label>
@@ -267,7 +214,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Country Dropdown with EASY_08 revert bug */}
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">Country</label>
                   <select
@@ -283,7 +229,6 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="pt-2">
-                  {/* Continue Button with MED_09 disabled defect */}
                   <button
                     disabled={!isAddressFormValid}
                     onClick={() => setActiveStep(2)}
@@ -293,7 +238,6 @@ export default function CheckoutPage() {
                   >
                     Use this address
                   </button>
-
                 </div>
               </div>
             ) : (
@@ -325,7 +269,6 @@ export default function CheckoutPage() {
 
             {activeStep === 2 ? (
               <div className="mt-4 space-y-4 text-xs">
-                {/* Method Radios */}
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer font-semibold text-gray-800">
                     <input
@@ -367,7 +310,6 @@ export default function CheckoutPage() {
                       <label className="text-xs font-bold text-gray-700 block mb-1">
                         Card Number (16 Digits)
                       </label>
-                      {/* MED_12: Card Field Formatting Space Handling maxLength */}
                       <input
                         type="text"
                         maxLength={cardMaxLength}
@@ -395,12 +337,11 @@ export default function CheckoutPage() {
                       <div className="relative">
                         <label className="text-xs font-bold text-gray-700 flex items-center gap-1 mb-1">
                           <span>CVV</span>
-                          {/* EASY_09: CVV tooltip mouseout bug */}
                           <HelpCircle
                             className="h-3.5 w-3.5 text-gray-500 cursor-pointer"
                             onMouseEnter={() => setShowCvvTooltip(true)}
                             onMouseLeave={() => {
-                              if (!isDefectActive("EASY_09_CVV_TOOLTIP_PERSIST")) {
+                              if (!UI_CONFIG.persistHelpTooltipOnLeave) {
                                 setShowCvvTooltip(false);
                               }
                             }}
@@ -416,7 +357,6 @@ export default function CheckoutPage() {
                           className="w-full rounded border border-gray-300 px-3 py-1.5 text-xs font-mono focus:border-amazon-orange focus:outline-none bg-white"
                         />
 
-                        {/* EASY_09 Floating Tooltip that persists upon mouseout */}
                         {showCvvTooltip && (
                           <div className="absolute top-full left-0 mt-1 w-52 bg-gray-900 text-white text-[11px] p-2.5 rounded shadow-xl z-30">
                             The 3- or 4-digit code on the back of your credit/debit card.
@@ -469,7 +409,6 @@ export default function CheckoutPage() {
                       <span className="text-gray-500">Qty: {it.quantity}</span>
                     </div>
                   </div>
-                  {/* Currency Symbol Swap (MED_11) */}
                   <span className="font-bold text-gray-900">
                     {displayCurrencySymbol}
                     {(it.price * it.quantity).toFixed(2)}
@@ -478,7 +417,6 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            {/* Place Order CTA with MED_13 Debounce missing */}
             <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                 <p className="text-xs text-gray-500">
@@ -535,7 +473,6 @@ export default function CheckoutPage() {
               <span>{displayCurrencySymbol}0.00</span>
             </div>
 
-            {/* Tax Evaluation (MED_10 & HARD_15 merged) */}
             <div className="flex justify-between text-gray-700">
               <span>Estimated Tax (8%):</span>
               <span>

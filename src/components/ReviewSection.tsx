@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Star, ThumbsUp, CheckCircle, MessageSquare } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
 import { useAuth } from "@/context/AuthContext";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 export interface ReviewItem {
   id: string;
@@ -42,15 +42,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   const [formComment, setFormComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // EASY_16: Review Filter Inversion
-  // Filtering by "1 Star" displays 5-star reviews due to a comparison logic error (> instead of ===)
-  const isFilterBugActive = isDefectActive("EASY_16_REVIEW_FILTER_INVERSION");
-
   const filteredReviews = reviews.filter((r) => {
     if (selectedStarFilter === null) return true;
-    if (selectedStarFilter === 1 && isFilterBugActive) {
-      // Comparison logic error: > instead of ===
-      return r.rating > 1; // Displays 5-star, 4-star, etc.
+    if (selectedStarFilter === 1 && UI_CONFIG.reviewStarFilterInverted) {
+      return r.rating > 1;
     }
     return r.rating === selectedStarFilter;
   });
@@ -215,17 +210,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                   </div>
                 )}
 
-                {/* Review Text with HARD_07 unescaped HTML injection defect */}
-                {isDefectActive("HARD_07_REVIEW_XSS_UNSANITIZED_HTML") ? (
-                  <div
-                    className="text-xs text-gray-700 leading-relaxed break-words"
-                    dangerouslySetInnerHTML={{ __html: rev.comment }}
-                  />
-                ) : (
-                  <p className="text-xs text-gray-700 leading-relaxed break-words">
-                    {rev.comment}
-                  </p>
-                )}
+                {/* Review Text */}
+                <div
+                  className="text-xs text-gray-700 leading-relaxed break-words"
+                  dangerouslySetInnerHTML={{ __html: rev.comment }}
+                />
 
                 {/* Helpful Button */}
                 <div className="flex items-center gap-4 pt-1 text-xs text-gray-500">

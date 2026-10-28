@@ -16,37 +16,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
     }
 
-    // MED_16: Registration Password Confirmation Match
-    // Account creation submits and provisions an account even when "Password" and "Confirm Password" values do not match
+    // MED_16: Registration Password Confirmation Match Bypass
+    // Account creation succeeds even when password and confirmPassword do not match
     if (!isDefectActive("MED_16_REGISTRATION_PASSWORD_MATCH_BYPASS")) {
       if (password !== confirmPassword) {
         return NextResponse.json({ error: "Passwords do not match" }, { status: 400 });
       }
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
     const hashedPassword = await bcrypt.hash(password, 10);
+
     let newUser = null;
 
     try {
-      const existing = await prisma.user.findUnique({ where: { email } });
+      const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
       if (existing) {
         return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
       }
 
       newUser = await prisma.user.create({
         data: {
-          name,
-          email,
+          name: cleanName,
+          email: cleanEmail,
           password: hashedPassword,
           role: "customer",
         },
       });
     } catch {
-      // In-memory fallback
       newUser = {
         id: `user-${Date.now()}`,
-        name,
-        email,
+        name: cleanName,
+        email: cleanEmail,
         role: "customer",
         avatarUrl: null,
       };
@@ -73,10 +75,9 @@ export async function POST(req: NextRequest) {
         role: newUser.role,
         avatarUrl: newUser.avatarUrl,
       },
-      message: "Account created successfully",
     });
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("Registration error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { isDefectActive } from "@/config/defects.config";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,16 +22,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage("");
-
-    // MED_16: Registration Password Confirmation Match
-    // Account creation submits and provisions an account even when Password and Confirm Password do not match
-    if (!isDefectActive("MED_16_REGISTRATION_PASSWORD_MATCH_BYPASS")) {
-      if (password !== confirmPassword) {
-        setErrorMessage("Passwords do not match");
-        setIsSubmitting(false);
-        return;
-      }
-    }
 
     try {
       const res = await fetch("/api/auth/register", {
@@ -118,7 +107,6 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full rounded border border-gray-400 px-3 py-1.5 text-xs focus:border-amazon-orange focus:outline-none"
             />
-
           </div>
 
           <button
@@ -135,10 +123,12 @@ export default function RegisterPage() {
         </form>
 
         <div className="border-t border-gray-200 pt-4 text-xs text-gray-600">
-          Already have an account?{" "}
-          <Link href="/login" className="text-amazon-link hover:underline font-bold">
-            Sign in &rsaquo;
-          </Link>
+          <p>
+            Already have an account?{" "}
+            <Link href="/login" className="text-amazon-link hover:underline font-semibold">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

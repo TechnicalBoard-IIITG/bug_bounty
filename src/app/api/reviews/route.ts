@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isDefectActive } from "@/config/defects.config";
 
 export const dynamic = "force-dynamic";
 
@@ -15,38 +16,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // HARD_07: Product review text is stored without sanitization
-    // Allowing submitted HTML (e.g. <img src=x onerror=...>)
-    const newReview = {
-      id: `rev-${Date.now()}`,
+    // HARD_07: Stored XSS in Product Reviews
+    // When defect is active: Server saves submitted review text without HTML entity sanitization
+    let finalComment = comment;
+    if (!isDefectActive("HARD_07_REVIEW_XSS_UNSANITIZED_HTML")) {
+      finalComment = comment.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    const reviewData = {
       productId,
       userId: userId || "guest-user",
       userName: userName || "Verified Amazon Customer",
       rating: Number(rating),
       title,
-      comment, // Unsanitized HTML stored per HARD_07
+      comment: finalComment,
       isVerifiedPurchase: true,
       helpfulVotes: 0,
-      createdAt: new Date().toISOString(),
     };
 
     try {
       const created = await prisma.review.create({
-        data: {
-          productId,
-          userId: userId || "guest-user",
-          userName: newReview.userName,
-          rating: Number(rating),
-          title,
-          comment,
-          isVerifiedPurchase: true,
-          helpfulVotes: 0,
-        },
+        data: reviewData,
       });
       return NextResponse.json({ success: true, review: created });
     } catch {
-      // If DB error, return memory review
-      return NextResponse.json({ success: true, review: newReview });
+      // Memory fallback
+      return NextResponse.json({
+        success: true,
+        review: {
+          id: `rev-${Date.now()}`,
+          ...reviewData,
+          createdAt: new Date().toISOString(),
+        },
+      });
     }
   } catch (error) {
     console.error("Review creation error:", error);

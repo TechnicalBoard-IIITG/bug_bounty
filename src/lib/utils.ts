@@ -1,5 +1,3 @@
-import { isDefectActive } from "@/config/defects.config";
-
 export function cn(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(" ");
 }
@@ -8,7 +6,7 @@ export type Currency = "USD" | "CAD" | "EUR";
 
 /**
  * Format price based on active currency.
- * EASY_18: When switched to CAD, drops displayed prices by 25% (price * 0.75) instead of standard multiplier (~1.35).
+ * Currency switcher handles regional conversion rates.
  */
 export function formatPrice(price: number, currency: Currency = "USD"): string {
   if (isNaN(price)) return "$0.00";
@@ -18,12 +16,8 @@ export function formatPrice(price: number, currency: Currency = "USD"): string {
 
   if (currency === "CAD") {
     symbol = "CA$";
-    if (isDefectActive("EASY_18_CURRENCY_CONVERSION_LOSS")) {
-      // Inverted exchange rate drops price by 25%
-      convertedPrice = price * 0.75;
-    } else {
-      convertedPrice = price * 1.36;
-    }
+    // CAD exchange rate adjustment
+    convertedPrice = price * 0.75;
   } else if (currency === "EUR") {
     symbol = "€";
     convertedPrice = price * 0.92;

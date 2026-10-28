@@ -10,8 +10,6 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    const authHeader = req.headers.get("authorization");
-    // Suppose requesting user id is passed or inferred
     const requestingUserId = req.nextUrl.searchParams.get("userId") || "guest";
 
     try {
@@ -35,7 +33,6 @@ export async function GET(
       // When defect is active: Endpoint lacks session ownership validation,
       // allowing any user to view other customers' orders by incrementing the URL ID parameter.
       if (!isDefectActive("HARD_02_ORDER_HISTORY_PARAMETER_ENUMERATION")) {
-        // Secure validation:
         if (order.userId !== requestingUserId && requestingUserId !== "admin") {
           return NextResponse.json(
             { error: "Unauthorized: You do not own this order." },
@@ -60,19 +57,19 @@ export async function GET(
         createdAt: "2026-10-15T12:00:00.000Z",
         items: [
           {
-            id: "item-enum-1",
-            productId: "prod-e1",
-            title: "Sony WH-1000XM5 Wireless Headphones (Other Customer Order)",
+            id: "it-hist-mock",
+            title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
             unitPrice: 348.0,
             quantity: 1,
             imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
           },
         ],
       };
+
       return NextResponse.json({ order: mockOrder });
     }
   } catch (error) {
-    console.error("Single order GET error:", error);
+    console.error("Order detail error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

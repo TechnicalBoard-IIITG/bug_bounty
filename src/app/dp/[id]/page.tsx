@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Star, ShieldCheck, Truck, RotateCcw, Share2, Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { BuyBox } from "@/components/BuyBox";
 import { ReviewSection } from "@/components/ReviewSection";
 import { ProductItem, INITIAL_PRODUCTS } from "@/lib/mockData";
 import { formatPrice, calculateDiscountPercent } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
-import { isDefectActive } from "@/config/defects.config";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -20,13 +19,9 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Variant Selection State (Triggers MED_20 in BuyBox)
+  // Variant Selection State
   const [selectedVariant, setSelectedVariant] = useState<string>("Standard");
   const [variantPriceOffset, setVariantPriceOffset] = useState<number>(0);
-
-  // TB-1: Base64 Console Leak on 7 Clicks
-  const [imageClickCount, setImageClickCount] = useState(0);
-  const [showEasterEggToast, setShowEasterEggToast] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -46,25 +41,6 @@ export default function ProductDetailPage() {
       })
       .finally(() => setIsLoading(false));
   }, [id]);
-
-  // TB-1: Image Click Handler
-  const handleImageClick = () => {
-    if (!isDefectActive("TB_01_BASE64_CONSOLE_LEAK")) return;
-
-    const nextCount = imageClickCount + 1;
-    setImageClickCount(nextCount);
-
-    if (nextCount === 7) {
-      // Print Base64 encoded flag to browser console per TB-1 with required prefix per Rule 3.3
-      console.log(
-        "%c[TREASURE HUNT ACTIVATED]",
-        "color: #ff9900; font-weight: bold; font-size: 14px;"
-      );
-      console.log("TREASURE_BUG_#1: RkxBR3s3X2NsaWNrc191bmxvY2tlZF9zZWNyZXRfdHJlYXN1cmV9");
-      setShowEasterEggToast(true);
-      setTimeout(() => setShowEasterEggToast(false), 5000);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -127,7 +103,6 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Left Column: Image Gallery (Cols 1-5) */}
         <div className="md:col-span-5 flex gap-4">
-          {/* Vertical Thumbnails */}
           <div className="flex flex-col gap-2 shrink-0">
             {product.images.map((img, idx) => (
               <button
@@ -144,28 +119,13 @@ export default function ProductDetailPage() {
             ))}
           </div>
 
-          {/* Main Showcase Image with TB-1 7-click listener */}
           <div className="flex-1 bg-white rounded-lg border border-gray-200 p-6 flex items-center justify-center relative overflow-hidden group select-none">
             <img
               src={product.images[selectedImageIndex] || product.images[0]}
               alt={product.title}
-              onClick={handleImageClick}
               title={product.title}
               className="max-h-[420px] max-w-full object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105"
             />
-
-            {/* TB-1 Secret Unlocked Toast */}
-            {showEasterEggToast && (
-              <div className="absolute bottom-4 left-4 right-4 bg-gray-900 text-white p-3 rounded shadow-2xl text-xs font-mono border border-green-500 animate-in fade-in slide-in-from-bottom">
-                <div className="flex items-center gap-1.5 text-green-400 font-bold mb-1">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Treasure Bug #1 Unlocked! Check DevTools Console</span>
-                </div>
-                <p className="text-[11px] text-gray-300">
-                  Flag: TREASURE_BUG_#1: RkxBR3s3X2NsaWNrc191bmxvY2tlZF9zZWNyZXRfdHJlYXN1cmV9
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
@@ -224,7 +184,7 @@ export default function ProductDetailPage() {
             </p>
           </div>
 
-          {/* Variant Selector (Triggers MED_20 Variant Pricing Failure) */}
+          {/* Variant Selector */}
           <div className="border-t border-gray-200 pt-3">
             <span className="text-xs font-bold text-gray-800 block mb-2">
               Configuration / Edition:

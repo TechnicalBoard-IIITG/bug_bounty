@@ -1,29 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
+model User {
+  id              String                @id @default(cuid())
+  name            String
+  email           String                @unique
+  password        String
+  role            String                @default("customer")
+  avatarUrl       String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  orders          Order[]
+  addresses       Address[]
+  reviews         Review[]
+  stockDecrements UserStockDecrement[]
 }
 
-model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  role      String    @default("customer")
-  avatarUrl String?
-  createdAt DateTime  @default(now())
-  addresses Address[]
-  orders    Order[]
-  reviews   Review[]
+model UserStockDecrement {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
 
 model Address {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String
   fullName  String
   street    String
@@ -32,29 +44,35 @@ model Address {
   pincode   String
   country   String   @default("United States")
   isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String      @id @default(cuid())
   title       String
-  slug        String   @unique
+  slug        String      @unique
   description String
   price       Float
   mrp         Float
   category    String
+  department  String
   brand       String
-  stock       Int      @default(50)
-  rating      Float    @default(4.5)
-  reviewCount Int      @default(12)
-  images      String   // JSON string array of image URLs
-  specs       String   // JSON string of key-value pairs
-  createdAt   DateTime @default(now())
+  stock       Int         @default(50)
+  rating      Float       @default(4.5)
+  reviewCount Int         @default(120)
+  images      String
+  specs       String
+  isPrime     Boolean     @default(true)
+  isDeal      Boolean     @default(false)
+  badge       String?
+  createdAt   DateTime    @default(now())
   reviews     Review[]
+  orderItems  OrderItem[]
 }
 
 model Review {
-  id                 String   @id @default(uuid())
+  id                 String   @id @default(cuid())
   productId          String
   userId             String
   userName           String
@@ -65,45 +83,47 @@ model Review {
   helpfulVotes       Int      @default(0)
   createdAt          DateTime @default(now())
   product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model Order {
-  id          String      @id @default(uuid())
+  id          String      @id @default(cuid())
   orderNumber String      @unique
   userId      String
   subtotal    Float
   discount    Float       @default(0)
-  tax         Float
+  tax         Float       @default(0)
   shippingFee Float       @default(0)
   total       Float
-  status      String      @default("Processing") // "Processing", "Delivered", "Cancelled"
+  status      String      @default("Processing")
   createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items       OrderItem[]
 }
 
 model OrderItem {
-  id        String  @id @default(uuid())
+  id        String   @id @default(cuid())
   orderId   String
   productId String
   title     String
   unitPrice Float
   quantity  Int
   imageUrl  String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Coupon {
-  id              String  @id @default(uuid())
-  code            String  @unique
-  discountPercent Float   @default(0)
-  flatDiscount    Float   @default(0)
-  isActive        Boolean @default(true)
+  id              String   @id @default(cuid())
+  code            String   @unique
+  discountPercent Float    @default(0)
+  flatDiscount    Float    @default(0)
+  createdAt       DateTime @default(now())
 }
 
 model PasswordResetToken {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   email     String
   token     String   @unique
   used      Boolean  @default(false)

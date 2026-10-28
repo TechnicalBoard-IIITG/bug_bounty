@@ -11,44 +11,58 @@ export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Missing or invalid authorization header" }, { status: 401 });
+      return NextResponse.json({ error: "Missing authorization token" }, { status: 401 });
     }
 
     const token = authHeader.replace("Bearer ", "");
 
-    // Check if token was revoked (HARD_04: If active, tokens are never considered revoked)
     if (isTokenRevoked(token)) {
-      return NextResponse.json({ error: "Session expired or logged out" }, { status: 401 });
+      return NextResponse.json({ error: "Session token has been revoked" }, { status: 401 });
     }
 
+    let decoded: any;
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string; name: string };
-
-      let user = null;
-      try {
-        user = await prisma.user.findUnique({
-          where: { id: decoded.id },
-          select: { id: true, name: true, email: true, role: true, avatarUrl: true, createdAt: true },
-        });
-      } catch {
-        // Fallback
-      }
-
-      if (!user) {
-        user = {
-          id: decoded.id,
-          name: decoded.name || "Customer",
-          email: decoded.email,
-          role: decoded.role || "customer",
-          avatarUrl: null,
-          createdAt: new Date(),
-        };
-      }
-
-      return NextResponse.json({ user });
+      decoded = jwt.verify(token, JWT_SECRET);
     } catch {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+      return NextResponse.json({ error: "Invalid or expired session token" }, { status: 401 });
     }
+
+    let user = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true,
+          createdAt: true,
+        },
+      });
+    } catch {
+      // Memory fallback
+      user = {
+        id: decoded.id,
+        name: decoded.name,
+        email: decoded.email,
+        role: decoded.role || "customer",
+        avatarUrl: null,
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    if (!user) {
+      user = {
+        id: decoded.id,
+        name: decoded.name,
+        email: decoded.email,
+        role: decoded.role || "customer",
+        avatarUrl: null,
+      };
+    }
+
+    return NextResponse.json({ user });
   } catch (error) {
     console.error("Auth me error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

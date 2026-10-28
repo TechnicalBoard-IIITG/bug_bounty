@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { isDefectActive } from "@/config/defects.config";
 import { Cookie, X } from "lucide-react";
 
 export const CookieBanner: React.FC = () => {
@@ -9,18 +8,8 @@ export const CookieBanner: React.FC = () => {
 
   if (isDismissed) return null;
 
-  // EASY_14: Cookie Banner Z-Index Stacking
-  // The fixed cookie notification banner renders over the footer newsletter submit button, intercepting pointer clicks
-  const isBugActive = isDefectActive("EASY_14_COOKIE_BANNER_ZINDEX_OVERLAY");
-
   return (
-    <div
-      className={`fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 text-white border-t border-gray-700 shadow-2xl p-4 transition-all duration-300 ${
-        isBugActive
-          ? "pointer-events-auto min-h-[110px]"
-          : "pointer-events-auto"
-      }`}
-    >
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 text-white border-t border-gray-700 shadow-2xl p-4 transition-all duration-300 pointer-events-auto min-h-[110px]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Cookie className="h-6 w-6 text-amazon-yellow shrink-0" />

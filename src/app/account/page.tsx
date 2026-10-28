@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Package, Lock, MapPin, User, HelpCircle, ShieldCheck } from "lucide-react";
+import { Package, Lock, MapPin, User, HelpCircle, Mail } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AccountPage() {
@@ -40,10 +40,10 @@ export default function AccountPage() {
       link: "/faq",
     },
     {
-      title: "Admin Console",
-      desc: "Back-office administration and system metrics",
-      icon: ShieldCheck,
-      link: "/admin/users",
+      title: "Contact Customer Care",
+      desc: "Reach out to our 24/7 dedicated customer support team",
+      icon: Mail,
+      link: "/contact",
     },
   ];
 
@@ -52,7 +52,7 @@ export default function AccountPage() {
       <div className="border-b border-gray-300 pb-4">
         <h1 className="text-2xl font-bold text-gray-900">Your Account</h1>
         <p className="text-xs text-gray-500">
-          Logged in as <span className="font-bold text-gray-800">{user?.name || "John Customer"}</span> ({user?.email || "customer@amazon.local"}) &bull; Role: <span className="uppercase font-semibold text-amazon-orange">{user?.role || "customer"}</span>
+          Logged in as <span className="font-bold text-gray-800">{user?.name || "Customer"}</span> {user?.email ? `(${user.email})` : ""} &bull; Role: <span className="uppercase font-semibold text-amazon-orange">{user?.role || "customer"}</span>
         </p>
       </div>
 

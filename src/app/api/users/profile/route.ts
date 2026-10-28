@@ -7,41 +7,37 @@ export const dynamic = "force-dynamic";
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, name, avatarUrl, mimeType } = body;
+    const { id, name, avatarUrl, mimeType } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
     // MED_15: User Profile File Upload MIME Validation
-    // Profile avatar file selector fails to restrict uploads to supported image formats (.png, .jpg, .webp)
-    // and accepts .txt or .pdf files.
+    // When defect is active: Server fails to restrict avatar upload types, allowing non-image files
     if (!isDefectActive("MED_15_AVATAR_UPLOAD_MIME_UNRESTRICTED") && mimeType) {
-      const allowed = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
-      if (!allowed.includes(mimeType)) {
+      const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (!allowed.includes(mimeType.toLowerCase())) {
         return NextResponse.json(
-          { error: "Invalid file type. Only PNG, JPEG, and WEBP images are supported." },
+          { error: "Invalid file type. Only JPEG, PNG, WEBP, and GIF images are permitted." },
           { status: 400 }
         );
       }
     }
 
-    const updateData: Record<string, unknown> = {};
+    const updateData: any = {};
     if (name) updateData.name = name;
     if (avatarUrl) updateData.avatarUrl = avatarUrl;
 
     // HARD_13: Profile Update Parameter Filtering
-    // The profile modification endpoint fails to filter restricted attributes,
-    // allowing users to pass elevated keys (e.g., role: "admin") to escalate privileges.
-    if (isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION")) {
-      if (body.role) {
-        updateData.role = body.role; // Privilege escalation flaw!
-      }
+    // When defect is active: Endpoint blindly accepts and applies 'role' parameter from payload
+    if (isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION") && body.role) {
+      updateData.role = body.role;
     }
 
     try {
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
+      const updated = await prisma.user.update({
+        where: { id },
         data: updateData,
         select: {
           id: true,
@@ -52,27 +48,18 @@ export async function PUT(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({
-        success: true,
-        user: updatedUser,
-        message: updateData.role
-          ? `Profile updated. Role updated to "${updateData.role}".`
-          : "Profile updated successfully",
-      });
+      return NextResponse.json({ success: true, user: updated });
     } catch {
-      // Fallback
+      // Memory fallback
       return NextResponse.json({
         success: true,
         user: {
-          id: userId,
+          id,
           name: name || "Customer",
-          email: "customer@amazon.local",
-          role: (updateData.role as string) || "customer",
+          email: "customer@team.local",
+          role: updateData.role || "customer",
           avatarUrl: avatarUrl || null,
         },
-        message: updateData.role
-          ? `Profile updated. Role updated to "${updateData.role}".`
-          : "Profile updated successfully",
       });
     }
   } catch (error) {

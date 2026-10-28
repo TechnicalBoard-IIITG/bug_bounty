@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 const SLIDES = [
   {
@@ -14,7 +13,6 @@ const SLIDES = [
     cta: "Shop Electronics",
     link: "/category/electronics",
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1600&q=80",
-    bgColor: "from-blue-900 to-indigo-950",
   },
   {
     id: 2,
@@ -23,7 +21,6 @@ const SLIDES = [
     cta: "Explore Fashion",
     link: "/category/fashion",
     image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&q=80",
-    bgColor: "from-amber-900 to-stone-900",
   },
   {
     id: 3,
@@ -32,7 +29,6 @@ const SLIDES = [
     cta: "Shop Home",
     link: "/category/home-kitchen",
     image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1600&q=80",
-    bgColor: "from-emerald-950 to-teal-900",
   },
   {
     id: 4,
@@ -41,7 +37,6 @@ const SLIDES = [
     cta: "Discover Books",
     link: "/category/books",
     image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1600&q=80",
-    bgColor: "from-slate-900 to-zinc-950",
   },
 ];
 
@@ -53,11 +48,7 @@ export const HeroCarousel: React.FC = () => {
   };
 
   const nextSlide = () => {
-    // EASY_04: Hero Carousel Directional Control
-    // Clicking the right navigation arrow on homepage main carousel triggers no action or state update,
-    // while left arrow functions normally
-    if (isDefectActive("EASY_04_HERO_CAROUSEL_RIGHT_ARROW")) {
-      // Intentionally do nothing!
+    if (!UI_CONFIG.enableCarouselForwardNav) {
       return;
     }
     setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
@@ -70,12 +61,11 @@ export const HeroCarousel: React.FC = () => {
         className="flex transition-transform duration-500 ease-out h-[260px] sm:h-[350px] md:h-[450px]"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {SLIDES.map((slide, idx) => (
+        {SLIDES.map((slide) => (
           <div
             key={slide.id}
             className="w-full shrink-0 relative h-full flex items-center"
           >
-            {/* Background Image with Gradient Overlay */}
             <div className="absolute inset-0">
               <img
                 src={slide.image}
@@ -85,7 +75,6 @@ export const HeroCarousel: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-amazon-bg via-transparent to-black/40" />
             </div>
 
-            {/* Slide Text Content */}
             <div className="relative max-w-7xl mx-auto px-6 sm:px-12 w-full text-white pb-20">
               <span className="inline-block bg-amazon-orange text-amazon-text font-black text-xs px-2.5 py-1 rounded mb-3 tracking-wide uppercase">
                 Featured Deal
@@ -109,7 +98,6 @@ export const HeroCarousel: React.FC = () => {
         ))}
       </div>
 
-      {/* Left Navigation Arrow (Working) */}
       <button
         onClick={prevSlide}
         className="absolute left-2 top-1/3 -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10"
@@ -118,7 +106,6 @@ export const HeroCarousel: React.FC = () => {
         <ChevronLeft className="h-8 w-8" />
       </button>
 
-      {/* Right Navigation Arrow (EASY_04 defect: does nothing if active) */}
       <button
         onClick={nextSlide}
         className="absolute right-2 top-1/3 -translate-y-1/2 p-2 rounded border border-transparent hover:border-white focus:outline-none focus:ring-2 focus:ring-amazon-orange bg-black/30 hover:bg-black/60 text-white transition z-10"
@@ -127,7 +114,6 @@ export const HeroCarousel: React.FC = () => {
         <ChevronRight className="h-8 w-8" />
       </button>
 
-      {/* Indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {SLIDES.map((_, idx) => (
           <button

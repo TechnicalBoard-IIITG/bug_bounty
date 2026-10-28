@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
 
 const FAQS = [
   {
@@ -41,16 +40,8 @@ const FAQS = [
 export default function FAQPage() {
   const [openId, setOpenId] = useState<string | null>("faq-1");
 
-  // EASY_12: FAQ Collapsible Accordion State
-  // Clicking the header of an open accordion panel fails to toggle the item closed
   const handleAccordionClick = (id: string) => {
-    if (isDefectActive("EASY_12_FAQ_ACCORDION_TOGGLE_FAIL")) {
-      // Bug: always sets to id without toggling closed if already open
-      setOpenId(id);
-    } else {
-      // Correct behavior: toggle off if already open
-      setOpenId(openId === id ? null : id);
-    }
+    setOpenId(id);
   };
 
   return (
@@ -100,9 +91,9 @@ export default function FAQPage() {
         <p className="text-gray-500">Our customer support specialists are ready to assist you.</p>
         <Link
           href="/contact"
-          className="inline-block mt-2 rounded bg-amazon-yellow px-5 py-2 font-bold text-amazon-text shadow-sm"
+          className="inline-block mt-2 rounded bg-amazon-yellow hover:bg-amazon-yellowHover px-5 py-1.5 font-bold text-amazon-text shadow-sm"
         >
-          Contact Customer Care &rarr;
+          Contact Customer Service
         </Link>
       </div>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { isDefectActive } from "@/config/defects.config";
 import { useCartStore } from "@/store/cartStore";
 
 export interface UserProfile {
@@ -62,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("amazon_auth_token", newToken);
     localStorage.setItem("amazon_user_profile", JSON.stringify(userData));
 
-    // Seed cached payment and address data for HARD_12 test
+    // Seed cached payment and address data
     localStorage.setItem(
       "amazon_cached_checkout_data",
       JSON.stringify({
@@ -72,17 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     );
 
-    // Fetch user's saved account cart items to simulate guest-to-user merge (HARD_08)
+    // Fetch user's saved account cart items
     const simulatedSavedAccountCart = [
       {
         id: "saved-item-1",
-        productId: "saved-prod-1",
-        title: "Previously Saved Wishlist Item (from Account)",
-        price: 29.99,
-        mrp: 39.99,
-        imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&q=80",
+        productId: "prod-e01",
+        title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
+        price: 348.0,
+        mrp: 399.99,
+        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
         quantity: 1,
-        stock: 20,
+        stock: 45,
       },
     ];
 
@@ -91,7 +90,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Call backend logout route
       if (token) {
         await fetch("/api/auth/logout", {
           method: "POST",
@@ -100,36 +98,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
       }
-    } catch (e) {
-      console.error("Logout request error:", e);
-    }
-
-    setUser(null);
-    setToken(null);
-
-    // HARD_12: Session Storage Cleanup on Sign-Out
-    // When defect is active, logging out fails to clear client-side localStorage,
-    // retaining cached user profile data containing masked card and address info
-    if (isDefectActive("HARD_12_SESSION_STORAGE_RETAINED_ON_LOGOUT")) {
-      // Intentionally do NOT clear amazon_user_profile or amazon_cached_checkout_data
-      localStorage.removeItem("amazon_auth_token");
-      // Notice: amazon_cached_checkout_data remains in localStorage!
-    } else {
+    } catch (err) {
+      console.error("Logout request error:", err);
+    } finally {
+      setToken(null);
+      setUser(null);
       localStorage.removeItem("amazon_auth_token");
       localStorage.removeItem("amazon_user_profile");
-      localStorage.removeItem("amazon_cached_checkout_data");
+
+      // Retains amazon_cached_checkout_data in localStorage (HARD-12 behavior)
     }
   };
 
   const updateUser = (updatedData: Partial<UserProfile>) => {
     if (!user) return;
-    const nextUser = { ...user, ...updatedData };
-    setUser(nextUser);
-    localStorage.setItem("amazon_user_profile", JSON.stringify(nextUser));
+    const updated = { ...user, ...updatedData };
+    setUser(updated);
+    try {
+      localStorage.setItem("amazon_user_profile", JSON.stringify(updated));
+    } catch (e) {
+      console.error("Profile cache update error:", e);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isLoading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

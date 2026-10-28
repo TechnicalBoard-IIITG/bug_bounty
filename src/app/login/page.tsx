@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { isDefectActive } from "@/config/defects.config";
 
 function LoginFormContent() {
   const router = useRouter();
@@ -14,14 +13,9 @@ function LoginFormContent() {
 
   const redirectUrl = searchParams.get("redirect") || "/";
 
-  const [email, setEmail] = useState("customer@amazon.local");
-  const [password, setPassword] = useState("password123");
-
-  // EASY_10: Authentication Password Mask Toggle
-  // User Requirement: Password field must not mask on onFocus.
-  // It must default to plain visible text and only mask when the user clicks the eye icon.
-  const isEasy10Active = isDefectActive("EASY_10_PASSWORD_MASK_DEFAULT_VISIBLE");
-  const [showPassword, setShowPassword] = useState(isEasy10Active);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(true);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,28 +36,16 @@ function LoginFormContent() {
       if (res.ok && data.success) {
         login(data.token, data.user);
 
-        // MED_17: Post-Authentication Checkout Redirect
-        // Signing in when prompted by checkout login interceptor clears return destination and redirects to homepage
-        if (
-          isDefectActive("MED_17_CHECKOUT_LOGIN_REDIRECT_HOME") &&
-          redirectUrl.includes("checkout")
-        ) {
-          router.push("/"); // Bug: Clears return destination and sends to homepage!
+        if (redirectUrl.includes("checkout")) {
+          router.push("/");
           return;
         }
 
-        // HARD_06: Login Redirect Parameter Handling
-        // Redirect handler fails to validate ?redirect= against internal relative paths,
-        // redirecting users to external domains upon login (Open Redirect)
-        if (isDefectActive("HARD_06_OPEN_REDIRECT_LOGIN_PARAMETER")) {
-          // Open redirect flaw: blindly assign external URL
-          if (redirectUrl.startsWith("http://") || redirectUrl.startsWith("https://")) {
-            window.location.href = redirectUrl;
-            return;
-          }
+        if (redirectUrl.startsWith("http://") || redirectUrl.startsWith("https://")) {
+          window.location.href = redirectUrl;
+          return;
         }
 
-        // Safe relative navigation
         router.push(redirectUrl.startsWith("/") ? redirectUrl : "/");
       } else {
         setErrorMessage(data.error || "Invalid email or password");
@@ -117,7 +99,6 @@ function LoginFormContent() {
               </Link>
             </div>
 
-            {/* Password input with EASY_10 eye toggle behavior */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -135,7 +116,6 @@ function LoginFormContent() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-
           </div>
 
           <button
@@ -150,14 +130,6 @@ function LoginFormContent() {
             By continuing, you agree to Amazon&apos;s Conditions of Use and Privacy Notice.
           </p>
         </form>
-
-        <div className="border-t border-gray-200 pt-4 text-xs text-gray-500 space-y-2">
-          <p className="font-bold text-gray-700 text-center">Demo Test Credentials:</p>
-          <div className="bg-gray-50 p-2.5 rounded border border-gray-200 text-[11px] font-mono space-y-1">
-            <p>Customer: customer@amazon.local / password123</p>
-            <p>Admin: admin@amazon.local / admin123</p>
-          </div>
-        </div>
       </div>
 
       {/* New Customer Box */}

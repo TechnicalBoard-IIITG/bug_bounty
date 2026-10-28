@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { ProductItem, INITIAL_PRODUCTS } from "@/lib/mockData";
-import { isDefectActive } from "@/config/defects.config";
-import { Star, ChevronRight, ChevronLeft, SlidersHorizontal } from "lucide-react";
+import { Star, ChevronRight, ChevronLeft } from "lucide-react";
 
 function SearchCatalogContent() {
   const router = useRouter();
@@ -27,10 +26,6 @@ function SearchCatalogContent() {
   // Price Range Inputs
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
-
-  // MED_21: Infinite Scroll Duplication state
-  const [duplicatedItems, setDuplicatedItems] = useState<ProductItem[]>([]);
-  const bottomObserverRef = useRef<HTMLDivElement>(null);
 
   // Fetch products from /api/products
   useEffect(() => {
@@ -54,53 +49,10 @@ function SearchCatalogContent() {
       .finally(() => setIsLoading(false));
   }, [searchParams]);
 
-  // MED_21: Infinite Scroll Duplication
-  // Scrolling past the end of search results endlessly duplicates and re-renders the first few products in the grid
-  useEffect(() => {
-    if (!isDefectActive("MED_21_INFINITE_SCROLL_DUPLICATION")) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && products.length > 0) {
-          // Append first 3 products repeatedly!
-          setDuplicatedItems((prev) => [
-            ...prev,
-            ...products.slice(0, 3).map((p, i) => ({
-              ...p,
-              id: `${p.id}-dup-${Date.now()}-${i}`,
-            })),
-          ]);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (bottomObserverRef.current) {
-      observer.observe(bottomObserverRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [products]);
-
-  // MED_02: Faceted Filter State Overwrite
-  // Selecting a filter in a second facet (Category + Brand) removes the previously active filter selection
   const handleFacetClick = (facetType: "category" | "brand", value: string) => {
     const params = new URLSearchParams();
-
-    if (isDefectActive("MED_02_FACETED_FILTER_OVERWRITE")) {
-      // Overwrite bug: Only keep search query and the newly clicked facet!
-      if (q) params.set("q", q);
-      params.set(facetType, value);
-    } else {
-      // Proper behavior: Conjunctive refinement
-      Array.from(searchParams.entries()).forEach(([k, v]) => params.set(k, v));
-      if (value) {
-        params.set(facetType, value);
-      } else {
-        params.delete(facetType);
-      }
-    }
-
+    if (q) params.set("q", q);
+    if (value) params.set(facetType, value);
     params.set("page", "1");
     router.push(`/s?${params.toString()}`);
   };
@@ -127,14 +79,26 @@ function SearchCatalogContent() {
     router.push(`/s?${params.toString()}`);
   };
 
-  const categories = ["Electronics", "Fashion", "Home & Kitchen", "Books"];
-  const brands = ["Sony", "Apple", "Samsung", "Logitech", "Levi's", "Nike", "Ninja", "Breville"];
-
-  // EASY_17: Out-of-Bounds Pagination
-  // Rapidly clicking "Next Page" exceeds maximum page limit, returning blank states instead of disabling button
-  const isNextDisabled = isDefectActive("EASY_17_OUT_OF_BOUNDS_PAGINATION")
-    ? false // Never disabled!
-    : currentPage >= totalPages;
+  const categories = [
+    "Electronics",
+    "Computers",
+    "Fashion",
+    "Home & Kitchen",
+    "Books",
+    "Beauty & Health",
+  ];
+  const brands = [
+    "Sony",
+    "Apple",
+    "Samsung",
+    "Logitech",
+    "Levi's",
+    "Patagonia",
+    "Ninja",
+    "Breville",
+    "Kindle",
+    "CeraVe",
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -301,23 +265,10 @@ function SearchCatalogContent() {
                     onQuickView={setSelectedQuickViewProduct}
                   />
                 ))}
-
-                {/* Duplicated Items for MED_21 */}
-                {duplicatedItems.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onQuickView={setSelectedQuickViewProduct}
-                  />
-                ))}
               </div>
-
-              {/* Infinite scroll sentinel for MED_21 */}
-              <div ref={bottomObserverRef} className="h-6" />
 
               {/* Pagination Controls */}
               <div className="flex items-center justify-center gap-2 pt-8 border-t border-gray-200">
-                {/* Previous Page */}
                 <button
                   disabled={currentPage <= 1}
                   onClick={() => handlePageChange(currentPage - 1)}
@@ -330,7 +281,6 @@ function SearchCatalogContent() {
                   <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
 
-                {/* Page Number Buttons (includes MED_04 extra page) */}
                 {[...Array(totalPages)].map((_, idx) => {
                   const pNum = idx + 1;
                   const isCurrent = pNum === currentPage;
@@ -349,15 +299,9 @@ function SearchCatalogContent() {
                   );
                 })}
 
-                {/* Next Page (EASY_17 out-of-bounds defect: never disabled if active) */}
                 <button
-                  disabled={isNextDisabled}
                   onClick={() => handlePageChange(currentPage + 1)}
-                  className={`flex items-center gap-1 rounded border px-3 py-1.5 text-xs font-semibold transition ${
-                    isNextDisabled
-                      ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                      : "border-gray-400 text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className="flex items-center gap-1 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 px-3 py-1.5 text-xs font-semibold transition"
                 >
                   Next <ChevronRight className="h-4 w-4" />
                 </button>
@@ -367,7 +311,6 @@ function SearchCatalogContent() {
         </main>
       </div>
 
-      {/* Quick View Modal */}
       <QuickViewModal
         product={selectedQuickViewProduct}
         onClose={() => setSelectedQuickViewProduct(null)}

@@ -2,14 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { User, Camera, ShieldAlert, Check, AlertCircle } from "lucide-react";
+import { User, Check, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { isDefectActive } from "@/config/defects.config";
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
 
-  const [name, setName] = useState(user?.name || "John Customer");
+  const [name, setName] = useState(user?.name || "");
   const [role, setRole] = useState(user?.role || "customer");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     user?.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80"
@@ -18,11 +17,7 @@ export default function ProfilePage() {
   const [statusMessage, setStatusMessage] = useState<{ text: string; isError: boolean } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // MED_15: User Profile File Upload MIME Validation
-  // Avatar file selector fails to restrict uploads to supported image formats and accepts .txt or .pdf files
-  const fileAcceptType = isDefectActive("MED_15_AVATAR_UPLOAD_MIME_UNRESTRICTED")
-    ? "*/*" // Bug: Unrestricted file types (.txt, .pdf, etc.)
-    : "image/png, image/jpeg, image/webp";
+  const fileAcceptType = "*/*";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,7 +25,6 @@ export default function ProfilePage() {
 
     setFileMime(file.type || "application/octet-stream");
 
-    // Convert to Base64 Data URL (safe for Vercel & local without file writes!)
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result as string);
@@ -44,19 +38,13 @@ export default function ProfilePage() {
     setStatusMessage(null);
 
     try {
-      // Build update payload
       const payload: Record<string, any> = {
-        userId: user?.id || "demo-cust-1",
+        userId: user?.id || "guest",
         name,
         avatarUrl: avatarPreview,
         mimeType: fileMime,
+        role,
       };
-
-      // HARD_13: Profile Update Parameter Filtering
-      // Endpoint fails to filter restricted attributes, allowing users to pass elevated keys (e.g., role)
-      if (isDefectActive("HARD_13_PROFILE_UPDATE_PRIVILEGE_ESCALATION")) {
-        payload.role = role; // Injected elevated attribute!
-      }
 
       const res = await fetch("/api/users/profile", {
         method: "PUT",
@@ -128,7 +116,7 @@ export default function ProfilePage() {
             <label className="font-bold text-gray-800 block">Profile Picture</label>
             <input
               type="file"
-              accept={fileAcceptType} // MED_15: Accepts */* when active
+              accept={fileAcceptType}
               onChange={handleFileChange}
               className="text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-gray-300 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200 cursor-pointer"
             />
@@ -137,7 +125,6 @@ export default function ProfilePage() {
                 Detected MIME: <span className="font-bold">{fileMime}</span>
               </p>
             )}
-            
           </div>
         </div>
 
@@ -153,24 +140,20 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Email (Readonly) */}
+        {/* Email */}
         <div className="space-y-1 text-xs">
           <label className="font-bold text-gray-800 block">Email Address</label>
           <input
             type="email"
-            value={user?.email || "customer@amazon.local"}
+            value={user?.email || ""}
             disabled
             className="w-full sm:w-80 rounded border border-gray-300 bg-gray-100 px-3 py-1.5 text-xs text-gray-500 cursor-not-allowed"
           />
         </div>
 
-        {/* HARD_13: Profile Update Parameter Filtering (Privilege Escalation) */}
+        {/* Role Select */}
         <div className="border-t border-gray-200 pt-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <label className="font-bold text-gray-800 text-xs">Account Role / Privileges</label>
-            
-          </div>
-
+          <label className="font-bold text-gray-800 text-xs block">Account Role / Privileges</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}

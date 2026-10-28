@@ -1,335 +1,229 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search,
   ShoppingCart,
   MapPin,
-  ChevronDown,
-  Sun,
   Moon,
-  User as UserIcon,
+  Sun,
+  User,
+  LogOut,
+  Package,
+  MapPinned,
+  ChevronDown,
 } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
-import { LocationModal } from "./LocationModal";
-
-const CATEGORIES = ["All", "Electronics", "Fashion", "Home & Kitchen", "Books"];
-
-const AUTOCOMPLETE_SUGGESTIONS: Record<string, string[]> = {
-  head: ["headphones wireless", "headphones with microphone", "headphone stand", "headset gaming"],
-  air: ["air fryer", "air purifiers for home", "airpods pro", "air fryer liners"],
-  book: ["books best sellers", "books self help", "book light", "bookmarks"],
-  jean: ["jeans for men", "jeans for women", "jean jacket blue", "jean shorts"],
-  coff: ["coffee maker", "coffee grinder", "coffee table", "coffee beans"],
-  oled: ["oled 4k tv", "oled monitor 144hz", "oled switch", "oled 55 inch"],
-  shoe: ["shoes for men", "shoes running", "shoes sneakers", "shoe rack"],
-  came: ["camera digital", "camera tripod", "camera backpack", "camera 4k"],
-};
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 export const Header: React.FC = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const cartItemCount = useCartStore((s) => s.getItemCount());
   const currency = useCartStore((s) => s.currency);
   const setCurrency = useCartStore((s) => s.setCurrency);
-  const reactiveCartCount = useCartStore((s) => s.getItemCount());
 
-  // Location Modal State
-  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [zipCode, setZipCode] = useState("98109");
-
-  // Search State
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  // Account Dropdown State
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isDark, setIsDark] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
-  // EASY_02: Theme Toggle Visual Inconsistency
-  const [isDarkIcon, setIsDarkIcon] = useState(false);
-
-  const toggleTheme = () => {
-    const nextDark = !isDarkIcon;
-    setIsDarkIcon(nextDark);
-
-    // EASY_02: If defect active, icon toggles but CSS color classes and background remain unchanged
-    if (!isDefectActive("EASY_02_THEME_TOGGLE_INCONSISTENCY")) {
-      if (nextDark) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    }
-  };
-
-  // EASY_03: Reactive Cart Badge Counter
-  // When defect is active: Header badge counter remains at initial mount state (0)
-  // and fails to reactively update until page reload
-  const [frozenCartCount, setFrozenCartCount] = useState<number>(0);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    // On initial mount, capture cart count
-    try {
-      const stored = localStorage.getItem("amazon_replica_cart_v1");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const count = parsed?.state?.items?.reduce((acc: number, it: { quantity: number }) => acc + (it.quantity || 1), 0) || 0;
-        setFrozenCartCount(count);
-      }
-    } catch {
-      setFrozenCartCount(0);
-    }
-  }, []);
-
-  const displayedCartCount = isDefectActive("EASY_03_REACTIVE_CART_BADGE")
-    ? frozenCartCount
-    : isMounted
-    ? reactiveCartCount
-    : 0;
-
-  // Search autocomplete logic
-  useEffect(() => {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!searchQuery.trim()) {
-      setSuggestions([]);
+      router.push("/s");
       return;
     }
-    const q = searchQuery.toLowerCase();
-    const matched = Object.keys(AUTOCOMPLETE_SUGGESTIONS).find((prefix) => q.startsWith(prefix));
-    if (matched) {
-      setSuggestions(AUTOCOMPLETE_SUGGESTIONS[matched]);
-    } else {
-      setSuggestions([
-        `${searchQuery} in ${selectedCategory}`,
-        `${searchQuery} best deals`,
-        `${searchQuery} prime eligible`,
-      ]);
-    }
-  }, [searchQuery, selectedCategory]);
-
-  // Click outside to close suggestions
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowSuggestions(false);
     const params = new URLSearchParams();
-    if (searchQuery) params.set("q", searchQuery);
-    if (selectedCategory && selectedCategory !== "All") params.set("category", selectedCategory);
+    params.set("q", searchQuery.trim());
+    if (selectedCategory && selectedCategory !== "all") {
+      params.set("category", selectedCategory);
+    }
     router.push(`/s?${params.toString()}`);
   };
 
-  // EASY_01: Top Navbar Logo Routing
-  // When active: Brand logo routes to /about instead of /
-  const logoHref = isDefectActive("EASY_01_NAVBAR_LOGO_ROUTING") ? "/about" : "/";
+  const handleThemeToggle = () => {
+    setIsDark(!isDark);
+    if (UI_CONFIG.enableThemeDocumentSync) {
+      document.documentElement.classList.toggle("dark");
+    }
+  };
+
+  // EASY_03: Header badge counter remains at initial mount state (0)
+  const displayedCartCount = 0;
 
   return (
-    <header className="bg-amazon-nav text-white select-none sticky top-0 z-40">
-      {/* Top Main Nav */}
-      <div className="flex items-center justify-between px-3 py-1.5 gap-2 md:gap-4 text-xs">
-        {/* Amazon Logo with EASY_01 routing defect */}
+    <header className="sticky top-0 z-40 bg-[#131921] text-white text-xs select-none shadow-md">
+      {/* Top Navbar */}
+      <div className="w-full px-2 sm:px-4 h-[60px] flex items-center gap-2 sm:gap-4">
+        {/* Amazon Logo with signature smile curve + EASY_01 routing */}
         <Link
-          href={logoHref}
-          className="flex items-center p-1.5 border border-transparent hover:border-white rounded cursor-pointer transition shrink-0"
-          title="Amazon Home"
+          href={UI_CONFIG.brandLogoHref}
+          className="flex items-center px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0"
         >
-          <div className="flex items-baseline font-black tracking-tight text-white text-xl md:text-2xl">
-            amazon<span className="text-amazon-orange text-xs md:text-sm font-semibold">.com</span>
+          <div className="flex flex-col items-start leading-none pt-1">
+            <div className="flex items-baseline">
+              <span className="text-xl sm:text-2xl font-black tracking-tighter text-white">
+                amazon
+              </span>
+              <span className="text-[11px] text-[#febd69] font-bold ml-0.5">.com</span>
+            </div>
+            {/* Amazon iconic curved smile arrow */}
+            <svg
+              className="w-[74px] h-[10px] text-[#ff9900] -mt-0.5"
+              viewBox="0 0 100 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M 5 6 Q 50 20 95 6"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 87 2 L 96 6 L 90 14 Z"
+                fill="currentColor"
+              />
+            </svg>
           </div>
         </Link>
 
-        {/* Deliver To Location */}
-        <button
-          onClick={() => setIsLocationModalOpen(true)}
-          className="hidden lg:flex items-center p-1.5 border border-transparent hover:border-white rounded text-left transition shrink-0"
-        >
-          <MapPin className="h-4 w-4 text-gray-300 mr-1 mt-2" />
-          <div>
-            <div className="text-[11px] text-gray-300 leading-tight">Deliver to</div>
-            <div className="text-[13px] font-bold text-white leading-tight">Seattle {zipCode}</div>
+        {/* Deliver to Location */}
+        <div className="hidden lg:flex items-center gap-1.5 px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0">
+          <MapPin className="h-4 w-4 text-white shrink-0 mt-2" />
+          <div className="flex flex-col leading-tight">
+            <span className="text-[11px] text-[#ccc]">Deliver to</span>
+            <span className="font-bold text-white text-xs">Seattle 98109</span>
           </div>
-        </button>
-
-        {/* Search Bar */}
-        <div ref={searchContainerRef} className="relative flex-1 max-w-3xl">
-          <form onSubmit={handleSearchSubmit} className="flex h-10 w-full rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-amazon-orange">
-            {/* Category Dropdown */}
-            <div className="relative bg-gray-100 hover:bg-gray-200 text-amazon-text flex items-center border-r border-gray-300">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="h-full bg-transparent pl-2.5 pr-6 text-xs text-gray-700 cursor-pointer focus:outline-none appearance-none font-medium"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="h-3 w-3 text-gray-600 absolute right-1.5 pointer-events-none" />
-            </div>
-
-            {/* Search Input */}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              placeholder="Search Amazon"
-              className="flex-1 px-3 text-sm text-amazon-text bg-white focus:outline-none"
-            />
-
-            {/* Search Button */}
-            <button
-              type="submit"
-              className="bg-amazon-accent hover:bg-amazon-yellow text-amazon-text px-4 flex items-center justify-center transition"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 stroke-[2.5]" />
-            </button>
-          </form>
-
-          {/* Autocomplete Dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-0.5 bg-white text-amazon-text rounded-b-md shadow-xl border border-gray-200 z-50 overflow-hidden">
-              {suggestions.map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    setSearchQuery(item);
-                    setShowSuggestions(false);
-                    const params = new URLSearchParams();
-                    params.set("q", item);
-                    if (selectedCategory !== "All") params.set("category", selectedCategory);
-                    router.push(`/s?${params.toString()}`);
-                  }}
-                  className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer text-xs font-semibold text-gray-800"
-                >
-                  <Search className="h-3.5 w-3.5 text-gray-400 mr-2.5" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Currency Switcher */}
-        <div className="hidden sm:flex items-center p-1.5 border border-transparent hover:border-white rounded transition">
+        {/* Amazon High-Contrast Search Bar */}
+        <form
+          onSubmit={handleSearch}
+          className="flex-1 flex items-center h-10 rounded focus-within:ring-2 focus-within:ring-[#f3a847] overflow-hidden bg-white shadow-sm"
+        >
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="h-full bg-[#f3f3f3] text-gray-700 px-3 text-xs border-r border-[#cdcdcd] focus:outline-none hover:bg-[#e2e2e2] cursor-pointer hidden md:block"
+          >
+            <option value="all">All Departments</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Computers">Computers</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Home & Kitchen">Home & Kitchen</option>
+            <option value="Books">Books</option>
+            <option value="Beauty & Health">Beauty & Health</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search Amazon"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 h-full px-3 text-gray-900 text-sm focus:outline-none placeholder-gray-500"
+          />
+
+          <button
+            type="submit"
+            className="h-full px-4 sm:px-5 bg-[#febd69] hover:bg-[#f3a847] text-gray-900 flex items-center justify-center transition cursor-pointer"
+          >
+            <Search className="h-5 w-5 text-gray-800" />
+          </button>
+        </form>
+
+        {/* Language & Currency Selector */}
+        <div className="hidden sm:flex items-center gap-1 px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0">
+          <span className="text-sm">🇺🇸</span>
           <select
             value={currency}
-            onChange={(e) => setCurrency(e.target.value as "USD" | "CAD" | "EUR")}
-            className="bg-transparent text-white font-bold text-xs cursor-pointer focus:outline-none"
+            onChange={(e) => setCurrency(e.target.value as any)}
+            className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer"
           >
-            <option value="USD" className="text-black">EN - $ USD</option>
-            <option value="CAD" className="text-black">EN - CA$ CAD</option>
-            <option value="EUR" className="text-black">EN - € EUR</option>
+            <option value="USD" className="text-gray-900 font-normal">EN - $ USD</option>
+            <option value="CAD" className="text-gray-900 font-normal">CA - $ CAD</option>
+            <option value="EUR" className="text-gray-900 font-normal">EU - € EUR</option>
           </select>
         </div>
 
         {/* EASY_02 Theme Switcher */}
         <button
-          onClick={toggleTheme}
-          className="p-1.5 border border-transparent hover:border-white rounded text-gray-300 hover:text-white transition flex items-center"
-          title="Toggle Theme"
+          onClick={handleThemeToggle}
+          title="Toggle Dark / Light Theme"
+          className="p-1.5 border border-transparent hover:border-white rounded-sm text-gray-300 hover:text-white transition"
         >
-          {isDarkIcon ? <Sun className="h-4 w-4 text-amazon-yellow" /> : <Moon className="h-4 w-4" />}
+          {isDark ? <Sun className="h-4 w-4 text-amazon-yellow" /> : <Moon className="h-4 w-4 text-gray-300" />}
         </button>
 
         {/* Account & Lists */}
         <div
-          className="relative"
+          className="relative px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0"
           onMouseEnter={() => setIsAccountMenuOpen(true)}
           onMouseLeave={() => setIsAccountMenuOpen(false)}
         >
-          <Link
-            href={user ? "/account" : "/login"}
-            className="flex flex-col p-1.5 border border-transparent hover:border-white rounded text-left transition"
-          >
-            <span className="text-[11px] text-gray-300 leading-tight">
-              Hello, {user ? user.name.split(" ")[0] : "sign in"}
+          <div className="flex flex-col leading-tight">
+            <span className="text-[11px] text-[#ccc] truncate max-w-[100px]">
+              {user ? `Hello, ${user.name}` : "Hello, sign in"}
             </span>
-            <span className="text-[13px] font-bold text-white flex items-center leading-tight">
-              Account & Lists
-              <ChevronDown className="h-3 w-3 ml-0.5 text-gray-400" />
+            <span className="font-bold text-white text-xs flex items-center gap-0.5">
+              Account &amp; Lists <ChevronDown className="h-3 w-3 text-gray-300" />
             </span>
-          </Link>
+          </div>
 
           {/* Account Dropdown */}
           {isAccountMenuOpen && (
-            <div className="absolute right-0 top-full mt-0 w-64 rounded-md bg-white p-4 shadow-2xl border border-gray-200 text-amazon-text z-50">
-              {!user ? (
-                <div className="border-b pb-3 mb-3 text-center">
+            <div className="absolute right-0 top-full mt-1 w-64 bg-white text-gray-800 rounded shadow-2xl border border-gray-200 p-4 z-50 animate-in fade-in duration-150">
+              {user ? (
+                <div className="space-y-3 pb-3 border-b border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-amazon-orange" />
+                    <div>
+                      <p className="font-bold text-xs text-gray-900">{user.name}</p>
+                      <p className="text-[11px] text-gray-500 truncate max-w-[180px]">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => logout()}
+                    className="w-full text-center py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="pb-3 border-b border-gray-200 text-center space-y-2">
                   <Link
                     href="/login"
-                    className="block w-full rounded bg-amazon-yellow hover:bg-amazon-yellowHover py-1.5 text-center text-xs font-bold shadow-sm"
+                    className="block w-full py-2 bg-[#ffd814] hover:bg-[#f7ca00] rounded text-xs font-bold text-gray-900 shadow-sm"
                   >
                     Sign in
                   </Link>
-                  <p className="mt-2 text-[11px] text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     New customer?{" "}
-                    <Link href="/register" className="text-amazon-link hover:underline">
+                    <Link href="/register" className="text-amazon-link hover:underline font-semibold">
                       Start here.
                     </Link>
                   </p>
                 </div>
-              ) : (
-                <div className="border-b pb-2 mb-2">
-                  <p className="text-xs font-bold text-gray-900">{user.name}</p>
-                  <p className="text-[11px] text-gray-500">{user.email}</p>
-                  <span className="inline-block mt-1 text-[10px] font-semibold bg-gray-200 px-1.5 py-0.5 rounded uppercase">
-                    {user.role}
-                  </span>
-                </div>
               )}
 
-              <div className="space-y-1.5 text-xs">
-                <div className="font-bold text-gray-800 text-[11px] uppercase tracking-wider mb-1">
-                  Your Account
-                </div>
-                <Link href="/account" className="block text-gray-700 hover:text-amazon-orange">
+              <div className="pt-3 space-y-2 text-xs">
+                <p className="font-bold text-gray-900 text-[11px] uppercase tracking-wider">Your Account</p>
+                <Link href="/account" className="block text-gray-700 hover:text-amazon-orange hover:underline">
                   Your Account
                 </Link>
-                <Link href="/orders" className="block text-gray-700 hover:text-amazon-orange">
+                <Link href="/orders" className="block text-gray-700 hover:text-amazon-orange hover:underline">
                   Your Orders
                 </Link>
-                <Link href="/account/addresses" className="block text-gray-700 hover:text-amazon-orange">
+                <Link href="/account/addresses" className="block text-gray-700 hover:text-amazon-orange hover:underline">
                   Your Addresses
                 </Link>
-                <Link href="/account/profile" className="block text-gray-700 hover:text-amazon-orange">
-                  Profile & Avatar
+                <Link href="/account/profile" className="block text-gray-700 hover:text-amazon-orange hover:underline">
+                  Profile &amp; Settings
                 </Link>
-
-                {/* Direct link to admin console for Hard 3 test */}
-                <Link href="/admin/users" className="block text-gray-500 hover:text-amazon-orange text-[11px] pt-1">
-                  Admin User Console
-                </Link>
-
-                {user && (
-                  <button
-                    onClick={() => logout()}
-                    className="w-full text-left pt-2 text-xs text-red-600 hover:underline border-t mt-2"
-                  >
-                    Sign Out
-                  </button>
-                )}
               </div>
             </div>
           )}
@@ -338,39 +232,26 @@ export const Header: React.FC = () => {
         {/* Returns & Orders */}
         <Link
           href="/orders"
-          className="hidden md:flex flex-col p-1.5 border border-transparent hover:border-white rounded text-left transition shrink-0"
+          className="hidden md:flex flex-col leading-tight px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0"
         >
-          <span className="text-[11px] text-gray-300 leading-tight">Returns</span>
-          <span className="text-[13px] font-bold text-white leading-tight">& Orders</span>
+          <span className="text-[11px] text-[#ccc]">Returns</span>
+          <span className="font-bold text-white text-xs">&amp; Orders</span>
         </Link>
 
-        {/* Cart Button with EASY_03 non-reactive defect */}
+        {/* Cart Button with EASY_03 non-reactive counter */}
         <Link
           href="/cart"
-          className="flex items-center p-1.5 border border-transparent hover:border-white rounded transition shrink-0 relative"
-          title="Shopping Cart"
+          className="flex items-end px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0 relative"
         >
-          <div className="relative flex items-center">
-            <ShoppingCart className="h-8 w-8 text-white" />
-            <span
-              className={`absolute -top-1 left-4 font-bold rounded-full text-center px-1 text-xs ${
-                displayedCartCount > 0 ? "text-amazon-orange font-black" : "text-white"
-              }`}
-            >
+          <div className="relative">
+            <span className="absolute -top-1.5 left-3 text-[#f08804] font-bold text-sm">
               {displayedCartCount}
             </span>
+            <ShoppingCart className="h-7 w-7 text-white" />
           </div>
-          <span className="hidden sm:inline font-bold text-[13px] ml-1 mt-3">Cart</span>
+          <span className="font-bold text-white text-xs hidden sm:inline ml-1 mb-0.5">Cart</span>
         </Link>
       </div>
-
-      {/* Location Modal */}
-      <LocationModal
-        isOpen={isLocationModalOpen}
-        onClose={() => setIsLocationModalOpen(false)}
-        currentZip={zipCode}
-        onSaveZip={(newZip) => setZipCode(newZip)}
-      />
     </header>
   );
 };

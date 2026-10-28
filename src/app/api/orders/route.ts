@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
 import { INITIAL_PRODUCTS } from "@/lib/mockData";
+import { recordTeamStockPurchase } from "@/lib/inventoryManager";
+import { addInMemoryOrder, getInMemoryOrders } from "@/lib/orderStore";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, discount = 0, tax = 0, shippingFee = 0, userId = "guest" } = body;
+    const { items, discount = 0, shippingFee = 0, userId = "guest", selectedVariantPrice } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -20,10 +22,14 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       let finalUnitPrice = item.unitPrice ?? item.price ?? 0;
 
+      // MED_20: Variant Pricing Failure (Variant price offset ignored on checkout)
+      if (isDefectActive("MED_20_VARIANT_PRICING_FAILURE") && selectedVariantPrice) {
+        // Keeps base product price ignoring selected variant offset
+      }
+
       // HARD_01: Order Payload Pricing Authority
       // When defect is active: Server blindly trusts user-provided unitPrice from request body
       if (!isDefectActive("HARD_01_ORDER_PAYLOAD_PRICING_AUTHORITY")) {
-        // Secure behavior: Lookup price from authoritative database
         try {
           const dbProd = await prisma.product.findUnique({ where: { id: item.productId } });
           if (dbProd) {
@@ -38,7 +44,14 @@ export async function POST(req: NextRequest) {
       }
 
       const qty = Number(item.quantity) || 1;
-      calculatedSubtotal += finalUnitPrice * qty;
+
+      // MED_08: Line Item Quantity Multiplication defect
+      let effectiveQty = qty;
+      if (isDefectActive("MED_08_CART_LINE_ITEM_QTY_MULTIPLICATION") && qty > 1) {
+        effectiveQty = qty * 2;
+      }
+
+      calculatedSubtotal += finalUnitPrice * effectiveQty;
 
       orderItemsToCreate.push({
         productId: item.productId,
@@ -47,10 +60,28 @@ export async function POST(req: NextRequest) {
         quantity: qty,
         imageUrl: item.imageUrl || "",
       });
+
+      // Record team stock decrement so this team's available stock decreases
+      if (userId && userId !== "guest") {
+        await recordTeamStockPurchase(userId, item.productId, qty);
+      }
     }
 
+    // Merged Tax Math (MED_10 & HARD_15)
+    // 1. Determine taxable base: pre-discount if MED_10 active, post-discount otherwise
+    let taxableBase = calculatedSubtotal;
+    if (!isDefectActive("MED_10_POST_DISCOUNT_TAX_CALCULATION")) {
+      taxableBase = Math.max(0, calculatedSubtotal - (Number(discount) || 0));
+    }
+
+    // 2. Truncate taxable base if HARD_15 active (drops taxable cents)
+    if (isDefectActive("HARD_15_TRUNCATION_TAX_EVASION")) {
+      taxableBase = Math.floor(taxableBase);
+    }
+
+    const calculatedTax = Number((taxableBase * 0.08).toFixed(2));
+    const finalTotal = Math.max(0, calculatedSubtotal - Number(discount) + calculatedTax + Number(shippingFee));
     const orderNumber = `112-${Math.floor(1000000 + Math.random() * 9000000)}-${Math.floor(1000000 + Math.random() * 9000000)}`;
-    const finalTotal = Math.max(0, calculatedSubtotal - discount + tax + shippingFee);
 
     try {
       const order = await prisma.order.create({
@@ -59,7 +90,7 @@ export async function POST(req: NextRequest) {
           userId: userId || "guest",
           subtotal: calculatedSubtotal,
           discount: Number(discount) || 0,
-          tax: Number(tax) || 0,
+          tax: calculatedTax,
           shippingFee: Number(shippingFee) || 0,
           total: Number(finalTotal.toFixed(2)),
           status: "Processing",
@@ -74,14 +105,14 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, order });
     } catch {
-      // In-memory fallback if database connection is pending
+      // In-memory fallback
       const mockOrder = {
         id: `order-${Date.now()}`,
         orderNumber,
         userId: userId || "guest",
         subtotal: calculatedSubtotal,
         discount: Number(discount) || 0,
-        tax: Number(tax) || 0,
+        tax: calculatedTax,
         shippingFee: Number(shippingFee) || 0,
         total: Number(finalTotal.toFixed(2)),
         status: "Processing",
@@ -89,6 +120,7 @@ export async function POST(req: NextRequest) {
         items: orderItemsToCreate.map((oi, idx) => ({ ...oi, id: `item-${idx}` })),
       };
 
+      addInMemoryOrder(mockOrder);
       return NextResponse.json({ success: true, order: mockOrder });
     }
   } catch (error) {
@@ -103,14 +135,19 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
 
     try {
+      const whereClause = userId
+        ? { userId }
+        : { orderNumber: "112-8492041-5928310" };
+
       const orders = await prisma.order.findMany({
-        where: userId ? { userId } : { orderNumber: "112-8492041-5928310" },
+        where: whereClause,
         include: { items: true },
         orderBy: { createdAt: "desc" },
       });
       return NextResponse.json({ orders });
     } catch {
-      return NextResponse.json({ orders: [] });
+      const matched = getInMemoryOrders(userId);
+      return NextResponse.json({ orders: matched });
     }
   } catch (error) {
     console.error("Orders GET error:", error);

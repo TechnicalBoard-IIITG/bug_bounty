@@ -6,7 +6,7 @@ import { Star, Heart, Check, Eye } from "lucide-react";
 import { ProductItem } from "@/lib/mockData";
 import { formatPrice, calculateDiscountPercent } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 interface ProductCardProps {
   product: ProductItem;
@@ -17,10 +17,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   const addItem = useCartStore((s) => s.addItem);
   const currency = useCartStore((s) => s.currency);
   const [added, setAdded] = useState(false);
-
-  // MED_06: Wishlist State Synchronization
-  // Returning to the catalog after adding an item to the wishlist displays an unselected heart icon instead of retaining active state
-  const isWishlistBug = isDefectActive("MED_06_WISHLIST_STATE_SYNC_FAIL");
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -45,25 +41,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
     setTimeout(() => setAdded(false), 1500);
   };
 
-  // EASY_05: Catalog Grid Media Mapping
-  // The product card titled "Blue Denim Jacket" in the catalog grid renders a mismatched image asset for running shoes
   let displayImage = product.images[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
   if (
-    isDefectActive("EASY_05_CATALOG_IMAGE_MAPPING") &&
-    product.title.toLowerCase().includes("blue denim jacket")
+    UI_CONFIG.catalogCardImageIndex === 1 &&
+    (product.id === "prod-f01" || product.title.toLowerCase().includes("jacket"))
   ) {
-    // Mismatched running shoes image asset!
     displayImage = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80";
   }
 
   const discountPercent = calculateDiscountPercent(product.mrp, product.price);
 
   return (
-    <div className="group relative bg-white border border-gray-200 rounded-md p-4 flex flex-col justify-between hover:shadow-lg transition duration-200 text-amazon-text">
-      {/* Wishlist Heart Button with MED_06 state defect */}
+    <div className="group relative bg-white border border-gray-200 rounded p-4 flex flex-col justify-between hover:border-gray-300 hover:shadow-md transition-all duration-200 text-amazon-text">
+      {/* Wishlist Button */}
       <button
         onClick={toggleWishlist}
-        className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 hover:bg-white text-gray-400 hover:text-red-500 shadow-sm z-10 transition"
+        className="absolute top-3 right-3 p-1.5 rounded-full bg-white/90 hover:bg-white text-gray-400 hover:text-red-500 shadow-sm z-10 transition border border-gray-100"
         title="Add to Wishlist"
       >
         <Heart
@@ -74,19 +67,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       </button>
 
       <div>
-        {/* Product Image */}
+        {/* Product Image Container */}
         <Link
           href={`/dp/${product.slug || product.id}`}
-          className="relative block h-52 w-full overflow-hidden rounded bg-gray-50 flex items-center justify-center p-3"
+          className="relative block h-52 w-full overflow-hidden rounded bg-white flex items-center justify-center p-2"
         >
           <img
             src={displayImage}
             alt={product.title}
-            className="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300"
+            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
 
           {discountPercent > 0 && (
-            <span className="absolute top-2 left-2 bg-red-700 text-white font-bold text-[10px] px-1.5 py-0.5 rounded">
+            <span className="absolute top-2 left-2 bg-[#cc0c39] text-white font-bold text-[10px] px-1.5 py-0.5 rounded">
               {discountPercent}% off
             </span>
           )}
@@ -99,14 +92,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           </span>
           <Link
             href={`/dp/${product.slug || product.id}`}
-            className="block text-xs font-semibold text-amazon-text hover:text-amazon-link hover:underline line-clamp-2 mt-0.5 leading-snug"
+            className="block text-xs font-semibold text-gray-900 hover:text-amazon-link hover:underline line-clamp-2 mt-0.5 leading-snug"
           >
             {product.title}
           </Link>
         </div>
 
-        {/* Ratings & Reviews */}
-        <div className="flex items-center gap-1 mt-1.5">
+        {/* Rating Stars */}
+        <div className="flex items-center gap-1.5 mt-1.5">
           <div className="flex text-amber-500">
             {[...Array(5)].map((_, i) => (
               <Star
@@ -119,14 +112,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
               />
             ))}
           </div>
-          <span className="text-[11px] text-amazon-link font-medium">
-            ({product.reviewCount})
+          <span className="text-[11px] text-amazon-link font-medium hover:underline">
+            {product.reviewCount}
           </span>
         </div>
 
-        {/* Price */}
+        {/* Price Section */}
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-lg font-bold text-amazon-price">
+          <span className="text-lg font-bold text-gray-900">
             {formatPrice(product.price, currency)}
           </span>
           {product.mrp > product.price && (
@@ -136,12 +129,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           )}
         </div>
 
-        {/* Prime Badge */}
+        {/* Prime & Delivery Note */}
         <div className="mt-1 flex items-center gap-1">
           <span className="text-[11px] font-black text-[#00a8e1] tracking-tight">
             prime
           </span>
-          <span className="text-[10px] text-gray-500">FREE delivery Tomorrow</span>
+          <span className="text-[10px] text-gray-600">FREE delivery Tomorrow</span>
         </div>
       </div>
 
@@ -149,10 +142,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2">
         <button
           onClick={handleAddToCart}
-          className={`flex-1 py-1.5 px-3 rounded-full text-xs font-bold shadow-sm transition flex items-center justify-center gap-1 ${
+          className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1 cursor-pointer ${
             added
               ? "bg-green-600 text-white"
-              : "bg-amazon-yellow hover:bg-amazon-yellowHover text-amazon-text"
+              : "bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900"
           }`}
         >
           {added ? (
@@ -167,7 +160,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         {onQuickView && (
           <button
             onClick={() => onQuickView(product)}
-            className="p-1.5 rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600"
+            className="p-1.5 rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600 transition cursor-pointer"
             title="Quick View"
           >
             <Eye className="h-3.5 w-3.5" />

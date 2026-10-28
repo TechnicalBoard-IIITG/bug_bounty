@@ -4,61 +4,77 @@ import { isDefectActive } from "@/config/defects.config";
 
 export const dynamic = "force-dynamic";
 
-const MOCK_COUPONS = [
-  { code: "SAVE10", discountPercent: 10, flatDiscount: 0 },
-  { code: "WELCOME10", discountPercent: 10, flatDiscount: 0 },
-  { code: "welcome10", discountPercent: 10, flatDiscount: 0 }, // For HARD_14 defect
-  { code: "FLAT50", discountPercent: 0, flatDiscount: 50 },
-];
-
 export async function POST(req: NextRequest) {
   try {
-    const { code } = await req.json();
+    const { code, currentApplied = [] } = await req.json();
 
     if (!code || typeof code !== "string") {
       return NextResponse.json({ error: "Coupon code is required" }, { status: 400 });
     }
 
-    let coupon = null;
+    const trimmedCode = code.trim();
 
     // HARD_14: Case-Sensitive Promo Stacking
-    // Promo codes lack case normalization on backend
-    if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
-      try {
+    // When defect is active: Server performs exact case check, treating "WELCOME10" and "welcome10" as distinct coupons
+    let coupon = null;
+    try {
+      if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
         coupon = await prisma.coupon.findUnique({
-          where: { code }, // Exact case query
+          where: { code: trimmedCode },
         });
-      } catch {
-        coupon = MOCK_COUPONS.find((c) => c.code === code);
-      }
-    } else {
-      try {
+      } else {
         coupon = await prisma.coupon.findFirst({
-          where: {
-            code: {
-              equals: code,
-              mode: "insensitive",
-            },
-          },
+          where: { code: { equals: trimmedCode, mode: "insensitive" } },
         });
-      } catch {
-        coupon = MOCK_COUPONS.find((c) => c.code.toUpperCase() === code.toUpperCase());
+      }
+    } catch {
+      // Memory fallback
+      const validCoupons: Record<string, { discountPercent: number; flatDiscount: number }> = {
+        SAVE10: { discountPercent: 10, flatDiscount: 0 },
+        WELCOME10: { discountPercent: 10, flatDiscount: 0 },
+        welcome10: { discountPercent: 10, flatDiscount: 0 },
+        FLAT50: { discountPercent: 0, flatDiscount: 50 },
+      };
+
+      if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
+        if (validCoupons[trimmedCode]) {
+          coupon = { code: trimmedCode, ...validCoupons[trimmedCode] };
+        }
+      } else {
+        const foundKey = Object.keys(validCoupons).find(
+          (k) => k.toLowerCase() === trimmedCode.toLowerCase()
+        );
+        if (foundKey) {
+          coupon = { code: foundKey, ...validCoupons[foundKey] };
+        }
       }
     }
 
-    if (!coupon || !coupon.isActive) {
-      return NextResponse.json(
-        { error: `The promotional code you entered is not valid: "${code}"` },
-        { status: 404 }
+    if (!coupon) {
+      return NextResponse.json({ error: "Invalid coupon code" }, { status: 404 });
+    }
+
+    // MED_07: Iterative Coupon Compounding
+    // When active, allows the same valid coupon code to be redeemed multiple times to compound discounts
+    if (!isDefectActive("MED_07_ITERATIVE_COUPON_COMPOUNDING")) {
+      const alreadyApplied = currentApplied.some(
+        (c: any) => c.code.toLowerCase() === coupon.code.toLowerCase()
       );
+      if (alreadyApplied) {
+        return NextResponse.json(
+          { error: "Coupon code has already been applied" },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json({
       success: true,
-      code: coupon.code,
-      discountPercent: coupon.discountPercent,
-      flatDiscount: coupon.flatDiscount,
-      message: `Coupon "${coupon.code}" applied successfully!`,
+      coupon: {
+        code: coupon.code,
+        discountPercent: coupon.discountPercent,
+        flatDiscount: coupon.flatDiscount,
+      },
     });
   } catch (error) {
     console.error("Coupon validation error:", error);

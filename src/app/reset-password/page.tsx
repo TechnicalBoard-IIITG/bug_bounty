@@ -3,8 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, AlertCircle, ShieldAlert } from "lucide-react";
-import { isDefectActive } from "@/config/defects.config";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -65,8 +64,6 @@ function ResetPasswordContent() {
         <p className="text-xs text-gray-600">
           We&apos;ll ask for this password whenever you sign in.
         </p>
-
-
 
         {statusMessage && (
           <div

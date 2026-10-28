@@ -2,236 +2,136 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { isDefectActive } from "@/config/defects.config";
+import { UI_CONFIG } from "@/lib/uiDefects";
 
 export const Footer: React.FC = () => {
-  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // EASY_13: Footer Legal Navigation Target
-  // Clicking the "Privacy Policy" link in footer navigation routes to non-existent URL and renders a 404 page
-  const privacyPolicyHref = isDefectActive("EASY_13_FOOTER_PRIVACY_POLICY_404")
-    ? "/privacy-policy-statement"
-    : "/about";
-
-  // EASY_15: Navigation Target Attribute Logic
-  // Internal footer links open in a new tab (target="_blank"), while external social links navigate away from current window (target="_self")
-  const isTargetInverted = isDefectActive("EASY_15_FOOTER_TARGET_ATTRIBUTE_INVERT");
-  const internalTarget = isTargetInverted ? "_blank" : "_self";
-  const externalTarget = isTargetInverted ? "_self" : "_blank";
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newsletterEmail.trim()) {
+    if (email.trim()) {
       setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 4000);
+      setEmail("");
     }
   };
 
+  // EASY_13: Privacy Policy links to non-existent route
+  const privacyPolicyHref = "/privacy-policy-404";
+
+  // EASY_15: Social links target attribute inverted
+  const externalTarget = UI_CONFIG.invertFooterLinkTargets ? "_self" : "_blank";
+
   return (
-    <footer className="bg-amazon-subnav text-white text-xs select-none">
-      {/* Back to Top */}
+    <footer className="bg-amazon-footer text-white text-xs mt-12 select-none">
+      {/* Back to top button */}
       <button
         onClick={scrollToTop}
-        className="w-full bg-[#37475a] hover:bg-[#485769] text-white py-3.5 text-center text-xs font-semibold tracking-wide transition"
+        className="w-full bg-[#37475a] hover:bg-[#485769] text-white py-3.5 text-center font-bold text-xs tracking-tight transition cursor-pointer"
       >
         Back to top
       </button>
 
-      {/* 4-Column Navigation Links */}
-      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-gray-300">
-        <div>
-          <h4 className="font-bold text-white text-sm mb-3">Get to Know Us</h4>
-          <ul className="space-y-2">
-            <li>
-              <Link href="/about" target={internalTarget} className="hover:underline">
-                About Amazon
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" target={internalTarget} className="hover:underline">
-                Careers & Culture
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" target={internalTarget} className="hover:underline">
-                Press Center
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" target={internalTarget} className="hover:underline">
-                Amazon Science
-              </Link>
-            </li>
+      {/* Main Footer Links Columns */}
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 border-b border-gray-700">
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-white mb-2">Get to Know Us</h4>
+          <ul className="space-y-1.5 text-gray-300">
+            <li><Link href="/about" className="hover:underline">About Amazon</Link></li>
+            <li><span className="text-gray-400">Careers &amp; Culture</span></li>
+            <li><span className="text-gray-400">Press Center</span></li>
+            <li><span className="text-gray-400">Amazon Science</span></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="font-bold text-white text-sm mb-3">Make Money with Us</h4>
-          <ul className="space-y-2">
-            <li>
-              <Link href="/s?q=sell" target={internalTarget} className="hover:underline">
-                Sell products on Amazon
-              </Link>
-            </li>
-            <li>
-              <Link href="/s?q=business" target={internalTarget} className="hover:underline">
-                Sell on Amazon Business
-              </Link>
-            </li>
-            <li>
-              <Link href="/s?q=affiliate" target={internalTarget} className="hover:underline">
-                Become an Affiliate
-              </Link>
-            </li>
-            <li>
-              <Link href="/s?q=advertise" target={internalTarget} className="hover:underline">
-                Advertise Your Products
-              </Link>
-            </li>
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-white mb-2">Make Money with Us</h4>
+          <ul className="space-y-1.5 text-gray-300">
+            <li><span className="text-gray-400">Sell products on Amazon</span></li>
+            <li><span className="text-gray-400">Sell on Amazon Business</span></li>
+            <li><span className="text-gray-400">Become an Affiliate</span></li>
+            <li><span className="text-gray-400">Advertise Your Products</span></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="font-bold text-white text-sm mb-3">Amazon Payment Products</h4>
-          <ul className="space-y-2">
-            <li>
-              <Link href="/account" target={internalTarget} className="hover:underline">
-                Amazon Business Card
-              </Link>
-            </li>
-            <li>
-              <Link href="/cart" target={internalTarget} className="hover:underline">
-                Shop with Points
-              </Link>
-            </li>
-            <li>
-              <Link href="/account" target={internalTarget} className="hover:underline">
-                Reload Your Balance
-              </Link>
-            </li>
-            <li>
-              <Link href="/cart" target={internalTarget} className="hover:underline">
-                Amazon Currency Converter
-              </Link>
-            </li>
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-white mb-2">Amazon Payment Products</h4>
+          <ul className="space-y-1.5 text-gray-300">
+            <li><span className="text-gray-400">Amazon Business Card</span></li>
+            <li><span className="text-gray-400">Shop with Points</span></li>
+            <li><span className="text-gray-400">Reload Your Balance</span></li>
+            <li><span className="text-gray-400">Amazon Currency Converter</span></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="font-bold text-white text-sm mb-3">Let Us Help You</h4>
-          <ul className="space-y-2">
-            <li>
-              <Link href="/account" target={internalTarget} className="hover:underline">
-                Your Account
-              </Link>
-            </li>
-            <li>
-              <Link href="/orders" target={internalTarget} className="hover:underline">
-                Your Orders
-              </Link>
-            </li>
-            <li>
-              <Link href="/faq" target={internalTarget} className="hover:underline">
-                Shipping Rates & Policies
-              </Link>
-            </li>
-            <li>
-              <Link href="/faq" target={internalTarget} className="hover:underline">
-                Returns & Replacements
-              </Link>
-            </li>
-            <li>
-              <Link href="/faq" target={internalTarget} className="hover:underline">
-                Help & Customer Service
-              </Link>
-            </li>
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-white mb-2">Let Us Help You</h4>
+          <ul className="space-y-1.5 text-gray-300">
+            <li><Link href="/account" className="hover:underline">Your Account</Link></li>
+            <li><Link href="/orders" className="hover:underline">Your Orders</Link></li>
+            <li><Link href="/faq" className="hover:underline">Shipping Rates &amp; Policies</Link></li>
+            <li><Link href="/faq" className="hover:underline">Returns &amp; Replacements</Link></li>
+            <li><Link href="/contact" className="hover:underline">Help &amp; Customer Service</Link></li>
           </ul>
         </div>
       </div>
 
-      {/* Social Media Links with EASY_15 defect */}
-      <div className="border-t border-gray-700 py-6 text-center">
-        <p className="text-xs text-gray-400 mb-2 font-medium">Connect with Us</p>
-        <div className="flex justify-center gap-6 text-xs text-gray-300">
-          <a
-            href="https://facebook.com/amazon"
-            target={externalTarget}
-            rel="noopener noreferrer"
-            className="hover:underline text-amazon-accent"
-          >
-            Facebook
-          </a>
-          <a
-            href="https://twitter.com/amazon"
-            target={externalTarget}
-            rel="noopener noreferrer"
-            className="hover:underline text-amazon-accent"
-          >
-            Twitter / X
-          </a>
-          <a
-            href="https://instagram.com/amazon"
-            target={externalTarget}
-            rel="noopener noreferrer"
-            className="hover:underline text-amazon-accent"
-          >
-            Instagram
-          </a>
+      {/* Social Media & Newsletter Row */}
+      <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-gray-800">
+        <div className="flex flex-col items-center md:items-start gap-2">
+          <span className="text-[11px] text-gray-400">Connect with Us</span>
+          <div className="flex items-center gap-4 text-xs font-semibold text-gray-300">
+            <a href="https://facebook.com" target={externalTarget} className="hover:text-amazon-orange hover:underline">
+              Facebook
+            </a>
+            <a href="https://twitter.com" target={externalTarget} className="hover:text-amazon-orange hover:underline">
+              Twitter / X
+            </a>
+            <a href="https://instagram.com" target={externalTarget} className="hover:text-amazon-orange hover:underline">
+              Instagram
+            </a>
+          </div>
         </div>
-      </div>
 
-      {/* Footer Newsletter Submit Section (Target of Easy 14 Cookie Banner Z-Index Overlay) */}
-      <div className="bg-[#131a22] border-t border-gray-800 py-6 px-4 text-center">
-        <div className="max-w-md mx-auto">
-          <h5 className="font-bold text-white text-xs mb-1">Subscribe to Amazon Daily Deals</h5>
-          <p className="text-[11px] text-gray-400 mb-3">
+        <div className="w-full md:w-auto text-center md:text-right">
+          <span className="text-[11px] font-bold text-gray-300 block mb-1">
+            Subscribe to Amazon Daily Deals
+          </span>
+          <p className="text-[10px] text-gray-400 mb-2">
             Get exclusive email alerts on lightning discounts and newly seeded products.
           </p>
-          {subscribed ? (
-            <p className="text-xs text-green-400 font-semibold">Thank you for subscribing!</p>
-          ) : (
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 justify-center">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="rounded px-3 py-1.5 text-xs text-amazon-text bg-white w-64 focus:outline-none"
-              />
-              <button
-                type="submit"
-                id="newsletter-submit-btn"
-                className="rounded bg-amazon-yellow hover:bg-amazon-yellowHover text-amazon-text font-bold px-4 py-1.5 text-xs transition"
-              >
-                Subscribe
-              </button>
-            </form>
-          )}
+          <form onSubmit={handleSubscribe} className="flex max-w-sm mx-auto md:mx-0">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="px-3 py-1.5 bg-white text-gray-800 rounded-l text-xs focus:outline-none flex-1"
+            />
+            <button
+              type="submit"
+              className="bg-amazon-yellow hover:bg-amazon-yellowHover text-amazon-text font-bold px-4 py-1.5 rounded-r text-xs transition"
+            >
+              {subscribed ? "Subscribed!" : "Subscribe"}
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* Bottom Legal Section */}
-      <div className="bg-amazon-nav py-8 text-center text-[11px] text-gray-400 space-y-2 border-t border-gray-800">
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link href="/about" target={internalTarget} className="hover:underline">
-            Conditions of Use
-          </Link>
-          {/* Privacy Policy link with EASY_13 404 defect */}
-          <Link href={privacyPolicyHref} target={internalTarget} className="hover:underline text-gray-300">
-            Privacy Policy
-          </Link>
-          <Link href="/about" target={internalTarget} className="hover:underline">
-            Consumer Health Data Privacy Disclosure
-          </Link>
-          <Link href="/about" target={internalTarget} className="hover:underline">
-            Your Ads Privacy Choices
-          </Link>
+      {/* Sub-Footer Legal Notice */}
+      <div className="bg-[#131a22] py-8 text-center text-[11px] text-gray-400 space-y-2">
+        <div className="flex justify-center flex-wrap gap-4 text-gray-300">
+          <Link href="/about" className="hover:underline">Conditions of Use</Link>
+          <Link href={privacyPolicyHref} className="hover:underline">Privacy Notice</Link>
+          <Link href="/faq" className="hover:underline">Consumer Health Data Privacy Disclosure</Link>
+          <Link href="/contact" className="hover:underline">Your Ads Privacy Choices</Link>
         </div>
-        <p>© 1996–2026, Amazon.com, Inc. or its affiliates — Entropy 2K26 QA Simulation Target</p>
+        <p>&copy; 1996-2026, Amazon.com, Inc. or its affiliates &bull; Entropy 2K26 QA Simulation Target</p>
       </div>
     </footer>
   );

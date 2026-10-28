@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { isDefectActive } from "@/config/defects.config";
 
 export interface CartItem {
   id: string;
@@ -51,22 +50,12 @@ export const useCartStore = create<CartState>()(
         const existingIndex = items.findIndex((i) => i.productId === product.productId);
 
         if (existingIndex > -1) {
-          // MED_18: Overwrite quantity to 1 instead of incrementing existing count
-          if (isDefectActive("MED_18_CART_QTY_OVERWRITE_ON_ADD")) {
-            const updated = [...items];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              quantity: 1, // Bug: resets to 1
-            };
-            set({ items: updated });
-          } else {
-            const updated = [...items];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              quantity: updated[existingIndex].quantity + quantity,
-            };
-            set({ items: updated });
-          }
+          const updated = [...items];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            quantity: 1, // Resets to 1
+          };
+          set({ items: updated });
         } else {
           set({
             items: [
@@ -87,7 +76,6 @@ export const useCartStore = create<CartState>()(
       },
 
       updateQuantity: async (productId, quantity) => {
-        // HARD_11: Check backend mutation endpoint at /api/cart
         try {
           const res = await fetch("/api/cart", {
             method: "POST",
@@ -99,23 +87,17 @@ export const useCartStore = create<CartState>()(
             quantity = data.quantity;
           }
         } catch {
-          // Fallback to local logic if offline or backend unreachable
+          // Fallback
         }
 
         const { items } = get();
         const updated = items.map((item) => {
           if (item.productId === productId) {
-            // HARD_11: When active, allows negative integers to drop subtotal
-            if (isDefectActive("HARD_11_CART_QUANTITY_BOUNDARY_NEGATIVE")) {
-              return { ...item, quantity };
-            }
-            return { ...item, quantity: Math.max(1, quantity) };
+            return { ...item, quantity };
           }
           return item;
         });
 
-        // HARD_09: Storage synchronization conflict
-        // If defect is active, updating quantities in Tab B writes without checking stale state from Tab A
         set({ items: updated });
       },
 
@@ -128,40 +110,23 @@ export const useCartStore = create<CartState>()(
 
       applyCoupon: (code, discountPercent, flatDiscount) => {
         const { coupons } = get();
-
-        // HARD_14: Case-Sensitive Promo Stacking
-        // If defect active, "WELCOME10" and "welcome10" are treated as distinct codes
-        const codeToMatch = isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")
-          ? code
-          : code.toUpperCase();
-
-        const existingCouponIndex = coupons.findIndex((c) =>
-          isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")
-            ? c.code === codeToMatch
-            : c.code.toUpperCase() === codeToMatch
-        );
+        const existingCouponIndex = coupons.findIndex((c) => c.code === code);
 
         if (existingCouponIndex > -1) {
-          // MED_07: Iterative Coupon Application
-          // If defect active, submitting the same valid promo code repeatedly compounds discount
-          if (isDefectActive("MED_07_ITERATIVE_COUPON_COMPOUNDING")) {
-            const updated = [...coupons];
-            updated[existingCouponIndex] = {
-              ...updated[existingCouponIndex],
-              appliedCount: updated[existingCouponIndex].appliedCount + 1,
-            };
-            set({ coupons: updated });
-            return { success: true, message: `Promo code "${code}" re-applied! Compounding discount.` };
-          }
-
-          return { success: false, message: `Promo code "${code}" is already applied.` };
+          const updated = [...coupons];
+          updated[existingCouponIndex] = {
+            ...updated[existingCouponIndex],
+            appliedCount: updated[existingCouponIndex].appliedCount + 1,
+          };
+          set({ coupons: updated });
+          return { success: true, message: `Promo code "${code}" applied.` };
         }
 
         set({
           coupons: [
             ...coupons,
             {
-              code: codeToMatch,
+              code,
               discountPercent,
               flatDiscount,
               appliedCount: 1,
@@ -169,7 +134,7 @@ export const useCartStore = create<CartState>()(
           ],
         });
 
-        return { success: true, message: `Promo code "${code}" successfully applied!` };
+        return { success: true, message: `Promo code "${code}" applied.` };
       },
 
       removeCoupon: (code) => {
@@ -178,70 +143,39 @@ export const useCartStore = create<CartState>()(
       },
 
       mergeGuestCart: (userSavedItems) => {
-        // HARD_08: Guest-to-User Cart Merging
-        // Signing in with an active guest cart overwrites and wipes the user's saved account cart items
-        if (isDefectActive("HARD_08_GUEST_CART_WIPES_USER_CART")) {
-          // Keep only current guest cart, completely drop userSavedItems
-          return;
-        }
-
-        // Proper behavior: merge items
-        const { items } = get();
-        const merged = [...items];
-        for (const userItem of userSavedItems) {
-          const idx = merged.findIndex((i) => i.productId === userItem.productId);
-          if (idx > -1) {
-            merged[idx].quantity += userItem.quantity;
-          } else {
-            merged.push(userItem);
-          }
-        }
-        set({ items: merged });
+        set({ items: userSavedItems });
       },
 
       getSubtotal: () => {
         const { items } = get();
-        return items.reduce((acc, item) => {
-          // MED_08: Line Item Quantity Multiplication defect in cart table
-          // Note: getSubtotal calculates running arithmetic
-          return acc + item.price * item.quantity;
-        }, 0);
+        return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       },
 
       getDiscountAmount: () => {
-        const { items, coupons } = get();
-        let runningSubtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const { coupons } = get();
+        const subtotal = get().getSubtotal();
         let totalDiscount = 0;
 
-        for (const coupon of coupons) {
-          if (coupon.discountPercent > 0) {
-            const count = coupon.appliedCount || 1;
-            for (let i = 0; i < count; i++) {
-              const disc = (runningSubtotal * coupon.discountPercent) / 100;
-              totalDiscount += disc;
-              // If MED_07 iterative compounding, subsequent passes discount the remaining subtotal
-              if (isDefectActive("MED_07_ITERATIVE_COUPON_COMPOUNDING")) {
-                runningSubtotal = Math.max(0, runningSubtotal - disc);
-              }
-            }
+        for (const c of coupons) {
+          const times = c.appliedCount || 1;
+          if (c.discountPercent > 0) {
+            totalDiscount += subtotal * (c.discountPercent / 100) * times;
           }
-          if (coupon.flatDiscount > 0) {
-            totalDiscount += coupon.flatDiscount;
-            runningSubtotal = Math.max(0, runningSubtotal - coupon.flatDiscount);
+          if (c.flatDiscount > 0) {
+            totalDiscount += c.flatDiscount * times;
           }
         }
 
-        return Number(totalDiscount.toFixed(2));
+        return Math.min(subtotal, totalDiscount);
       },
 
       getItemCount: () => {
         const { items } = get();
-        return items.reduce((acc, item) => acc + item.quantity, 0);
+        return items.reduce((count, item) => count + item.quantity, 0);
       },
     }),
     {
-      name: "amazon_replica_cart_v1",
-      skipHydration: true,
+      name: "amazon_shopping_cart_storage",
     }
   )
 );

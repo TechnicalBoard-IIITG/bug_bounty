@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, XCircle, ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import { Package, XCircle, CheckCircle2, Clock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
@@ -12,8 +12,6 @@ export default function OrdersPage() {
   const currency = useCartStore((s) => s.currency);
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Hard 10 cancellation status message
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
 
   const fetchOrders = () => {
@@ -21,49 +19,11 @@ export default function OrdersPage() {
     fetch(`/api/orders?userId=${user?.id || ""}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.orders && data.orders.length > 0) {
+        if (data.orders) {
           setOrders(data.orders);
-        } else {
-          // Pre-seeded demo orders (targets for Hard 2 and Hard 10)
-          setOrders([
-            {
-              id: "112-8492041-5928310",
-              orderNumber: "112-8492041-5928310",
-              status: "Delivered", // Target for HARD_10
-              total: 375.84,
-              createdAt: "2026-10-14T10:30:00.000Z",
-              items: [
-                {
-                  id: "it-hist-1",
-                  title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
-                  unitPrice: 348.0,
-                  quantity: 1,
-                  imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-                },
-              ],
-            },
-            {
-              id: "112-1049281-4920194",
-              orderNumber: "112-1049281-4920194",
-              status: "Processing",
-              total: 89.99,
-              createdAt: "2026-10-16T08:15:00.000Z",
-              items: [
-                {
-                  id: "it-hist-2",
-                  title: "Ninja AF101 4-Quart Digital Air Fryer",
-                  unitPrice: 89.99,
-                  quantity: 1,
-                  imageUrl: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=800&q=80",
-                },
-              ],
-            },
-          ]);
         }
       })
-      .catch(() => {
-        // Fallback
-      })
+      .catch(() => {})
       .finally(() => setIsLoading(false));
   };
 
@@ -71,8 +31,6 @@ export default function OrdersPage() {
     fetchOrders();
   }, [user]);
 
-  // HARD_10: Order State Transition Validation
-  // Allows cancellation of Delivered orders
   const handleCancelOrder = async (orderId: string, currentStatus: string) => {
     const confirmCancel = confirm(
       `Are you sure you want to request cancellation for Order #${orderId} (Status: ${currentStatus})?`
@@ -87,7 +45,6 @@ export default function OrdersPage() {
 
       if (res.ok && data.success) {
         setCancelMessage(data.message);
-        // Refresh local state to reflect cancellation
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: "Cancelled" } : o))
         );
@@ -156,7 +113,7 @@ export default function OrdersPage() {
                       Ship To
                     </span>
                     <span className="font-semibold text-amazon-link hover:underline cursor-pointer">
-                      {user?.name || "John Customer"}
+                      {user?.name || "Customer"}
                     </span>
                   </div>
                 </div>
@@ -165,7 +122,6 @@ export default function OrdersPage() {
                   <span className="text-[10px] uppercase font-bold text-gray-500 block">
                     Order # {ord.orderNumber || ord.id}
                   </span>
-                  {/* Link with HARD_02 parameter enumeration vulnerability */}
                   <Link
                     href={`/orders/${ord.id}/summary`}
                     className="text-amazon-link hover:underline font-semibold"
@@ -226,14 +182,13 @@ export default function OrdersPage() {
                   ))}
                 </div>
 
-                {/* Cancellation Button (Target for HARD_10) */}
                 <div className="border-t pt-3 flex justify-end gap-3">
                   {ord.status !== "Cancelled" && (
                     <button
                       onClick={() => handleCancelOrder(ord.orderNumber || ord.id, ord.status)}
                       className="rounded border border-red-300 text-red-700 hover:bg-red-50 px-4 py-1.5 text-xs font-semibold shadow-sm transition"
                     >
-                      Cancel Order {ord.status === "Delivered" && "(HARD_10 flaw)"}
+                      Cancel Order
                     </button>
                   )}
                   <Link
