@@ -76,7 +76,7 @@ All defects are centrally configured in `src/config/defects.config.ts`. Every ac
 - **Easy 15: Navigation Target Attribute Logic** (`Footer.tsx`): Internal footer links open in new tab (`target="_blank"`), while external social links lack `target="_blank"`.
 - **Easy 16: Review Filter Inversion** (`ReviewSection.tsx`): Filtering by "1 Star" displays 5-star reviews due to comparison logic error (`>` instead of `===`).
 - **Easy 17: Out-of-Bounds Pagination** (`app/s/page.tsx`): Next Page button remains active beyond total pages, returning blank states.
-- **Easy 18: Currency Conversion Loss** (`lib/utils.ts`): Switching currency to CAD drops prices by 25% due to inverted exchange rate multiplier (`* 0.75`).
+- **Easy 18: Currency Conversion Loss** (`lib/utils.ts`): Storefront defaults to INR (₹); switching currency to CAD drops prices to 75% of base USD value due to inverted exchange rate multiplier (`* 0.75`).
 
 ### Part II: Medium Defects (1–21) [5 Base pts | +5 Speed Bonus | Max 10 pts]
 - **Medium 1: Case-Sensitive Search Matching** (`api/products/route.ts`): Searching lowercase "headphones" returns 0 matches while capitalized "Headphones" returns matches.
@@ -89,7 +89,7 @@ All defects are centrally configured in `src/config/defects.config.ts`. Every ac
 - **Medium 8: Line Item Quantity Multiplication** (`app/cart/page.tsx`): Increasing item quantity updates quantity count but leaves line subtotal at single-unit price.
 - **Medium 9: Form Autofill Event Binding** (`app/checkout/page.tsx`): Autofilling shipping address leaves Continue button disabled until manual keystroke occurs.
 - **Medium 10: Post-Discount Tax Evaluation** (`app/checkout/page.tsx`): Calculates sales tax against pre-discount subtotal rather than discounted balance.
-- **Medium 11: Regional Currency Symbol Consistency** (`app/checkout/page.tsx`): Catalog displays in USD (`$`), but checkout review step swaps symbol to EUR (`€`) without numeric conversion.
+- **Medium 11: Regional Currency Symbol Consistency** (`app/checkout/page.tsx`): Catalog displays in default INR (`₹`) or USD (`$`), but checkout review step swaps symbol to EUR (`€`) without numeric conversion.
 - **Medium 12: Card Field Formatting Space Handling** (`app/checkout/page.tsx`): Pasting card numbers with spaces counts spaces toward `maxLength={16}`, truncating last 3 digits.
 - **Medium 13: Submission Button Debouncing** (`app/checkout/page.tsx`): Rapidly clicking "Place Order" fails to disable button, allowing duplicate orders.
 - **Medium 14: Address Management List Indexing** (`app/account/addresses/page.tsx`): Clicking Delete on second address entry deletes the first record instead.

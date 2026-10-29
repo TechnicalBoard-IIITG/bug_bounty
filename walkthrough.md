@@ -22,7 +22,7 @@ The full-stack Amazon e-commerce replica for the **Entropy 2K26 QA Bug Bounty Si
 
 | Route | Feature Area | Key Functionality & Flaws Handled |
 |:---|:---|:---|
-| `/` | **Homepage** | Hero banner carousel with working slide indicators (Easy 4 right arrow defect), 4-card category promo grid, today's deals rail, and 6 department recommendation rails. |
+| `/` | **Homepage** | Hero banner carousel with elevated 520px layout, working backward slide navigation (Easy 4 forward right-arrow lock defect), 4-card category promo grid, today's deals rail, and 6 department recommendation rails. Default currency set to Indian Rupee (INR - ₹) with dynamic regional pricing and flag selector. |
 | `/s` | **Search & Catalog** | Multi-department search, faceted filtering (categories, brands, ratings, price ranges), sorting (`price-asc`, `price-desc`, `rating`, `featured`), pagination (Med 4, Easy 17), and infinite scroll duplication (Med 21). |
 | `/category/:slug` | **Department Landing** | Full-fledged department catalogs for **Electronics, Computers, Fashion, Home & Kitchen, Books, and Beauty & Health** with Amazon breadcrumbs, subcategory tag pills, left sidebar filters, and sorting. |
 | `/deals` | **Today's Lightning Deals** | Dedicated daily deals showcase with countdown timers, department filter pills, and discount tier buttons (10%+, 15%+, 20%+ off). |
