@@ -133,6 +133,14 @@ export const Footer: React.FC = () => {
         </div>
         <p>&copy; 1996-2026, Amazon.com, Inc. or its affiliates &bull; Entropy 2K26 QA Simulation Target</p>
       </div>
+
+      {/* The ONLY Authentic Inspect Tool QA Comment */}
+      <div
+        dangerouslySetInnerHTML={{
+          __html:
+            "<!-- [INTERNAL DEV NOTICE - QA ENVIRONMENT 2026] Build Revision: 0x9f82b7a-prod. Staging release signed. TREASURE CODE: TREASURE-DOM-INSPECT -->",
+        }}
+      />
     </footer>
   );
 };

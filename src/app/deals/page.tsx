@@ -101,6 +101,38 @@ export default function DealsPage() {
         </div>
       </div>
 
+      {/* Featured Festive & Seasonal Promotional Codes */}
+      <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-4 mb-6 shadow-xs">
+        <div className="flex items-center gap-2 mb-2.5">
+          <Sparkles className="h-4 w-4 text-amber-600" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900">
+            Exclusive Festive &amp; Flash Promo Codes &bull; Apply at Checkout
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-white border border-dashed border-amber-300 rounded p-2.5 text-center">
+            <span className="text-[10px] text-gray-500 block uppercase font-medium">Grand Festive Off</span>
+            <code className="text-xs font-bold text-amber-800 tracking-wider">DIWALI50</code>
+            <span className="text-[10px] text-green-700 block mt-0.5 font-semibold">Flat ₹50 OFF</span>
+          </div>
+          <div className="bg-white border border-dashed border-amber-300 rounded p-2.5 text-center">
+            <span className="text-[10px] text-gray-500 block uppercase font-medium">Season Celebration</span>
+            <code className="text-xs font-bold text-amber-800 tracking-wider">FESTIVE20</code>
+            <span className="text-[10px] text-green-700 block mt-0.5 font-semibold">20% Instant OFF</span>
+          </div>
+          <div className="bg-white border border-dashed border-amber-300 rounded p-2.5 text-center">
+            <span className="text-[10px] text-gray-500 block uppercase font-medium">Mega Savings Offer</span>
+            <code className="text-xs font-bold text-amber-800 tracking-wider">MEGA25</code>
+            <span className="text-[10px] text-green-700 block mt-0.5 font-semibold">25% Storewide OFF</span>
+          </div>
+          <div className="bg-white border border-dashed border-amber-300 rounded p-2.5 text-center">
+            <span className="text-[10px] text-gray-500 block uppercase font-medium">Flash Lightning Deal</span>
+            <code className="text-xs font-bold text-amber-800 tracking-wider">SUPERDEAL</code>
+            <span className="text-[10px] text-green-700 block mt-0.5 font-semibold">Flat ₹30 OFF</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Deals Grid with Secondary Discount Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-200 gap-3 mb-6">
         <span className="text-xs text-gray-600 font-medium">

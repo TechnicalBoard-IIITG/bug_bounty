@@ -184,6 +184,30 @@ export default function ProductDetailPage() {
             </p>
           </div>
 
+          {/* Bank & Partner Offers */}
+          <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 space-y-2">
+            <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+              <span>💳 Bank Offers &amp; Partner Discounts</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+              <div className="bg-white border border-gray-200 rounded p-2 shadow-xs">
+                <span className="font-bold text-gray-800 block">Bank Instant Discount</span>
+                <span className="text-gray-600 block text-[10px]">10% off up to ₹1,000</span>
+                <code className="text-amazon-link font-bold mt-1 inline-block">SAVE10</code>
+              </div>
+              <div className="bg-white border border-gray-200 rounded p-2 shadow-xs">
+                <span className="font-bold text-gray-800 block">Cashback Offer</span>
+                <span className="text-gray-600 block text-[10px]">15% Cashback with card</span>
+                <code className="text-amazon-link font-bold mt-1 inline-block">CASHBACK15</code>
+              </div>
+              <div className="bg-white border border-gray-200 rounded p-2 shadow-xs">
+                <span className="font-bold text-gray-800 block">Prime Member Savings</span>
+                <span className="text-gray-600 block text-[10px]">Flat ₹100 off on checkout</span>
+                <code className="text-amazon-link font-bold mt-1 inline-block">PRIME100</code>
+              </div>
+            </div>
+          </div>
+
           {/* Variant Selector */}
           <div className="border-t border-gray-200 pt-3">
             <span className="text-xs font-bold text-gray-800 block mb-2">

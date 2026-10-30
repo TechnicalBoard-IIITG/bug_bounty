@@ -6,10 +6,13 @@ import Link from "next/link";
 import {
   HelpCircle,
   Lock,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
+import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -18,6 +21,15 @@ export default function CheckoutPage() {
   const getSubtotal = useCartStore((s) => s.getSubtotal);
   const getDiscountAmount = useCartStore((s) => s.getDiscountAmount);
   const clearCart = useCartStore((s) => s.clearCart);
+  const coupons = useCartStore((s) => s.coupons);
+  const applyCoupon = useCartStore((s) => s.applyCoupon);
+  const removeCoupon = useCartStore((s) => s.removeCoupon);
+
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoMessage, setPromoMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [treasureCode, setTreasureCode] = useState<string | null>(null);
+  const [isTreasureModalOpen, setIsTreasureModalOpen] = useState(false);
 
   // Accordion Step State (1: Shipping Address, 2: Payment, 3: Review)
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -62,6 +74,47 @@ export default function CheckoutPage() {
 
   const cardMaxLength = 16;
   const displayCurrencySymbol = "€";
+
+  const handleApplyCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoCodeInput.trim()) return;
+
+    setIsApplyingPromo(true);
+    setPromoMessage(null);
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCodeInput.trim() }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        const c = data.coupon || data;
+        const result = applyCoupon(c.code, c.discountPercent, c.flatDiscount);
+        setPromoMessage({ text: result.message, isError: !result.success });
+        if (result.success) setPromoCodeInput("");
+
+        if (data.isTreasure && data.treasureCode) {
+          setTreasureCode(data.treasureCode);
+          setIsTreasureModalOpen(true);
+        }
+      } else {
+        setPromoMessage({
+          text: data.error || "The promotional code you entered is not valid.",
+          isError: true,
+        });
+      }
+    } catch {
+      setPromoMessage({
+        text: "Error validating code. Please try again.",
+        isError: true,
+      });
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
@@ -489,8 +542,88 @@ export default function CheckoutPage() {
               </span>
             </div>
           </div>
+
+          {/* Promo Code / Gift Card Section */}
+          <div className="border-t border-gray-200 pt-3 space-y-2">
+            <h4 className="font-bold text-gray-800 text-xs">
+              Gift Cards & Promotional Codes
+            </h4>
+            <form onSubmit={handleApplyCoupon} className="flex gap-2">
+              <input
+                type="text"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value)}
+                placeholder="Enter code"
+                className="flex-1 rounded border border-gray-300 px-3 py-1.5 text-xs uppercase focus:border-amazon-orange focus:outline-none focus:ring-1 focus:ring-amazon-orange"
+              />
+              <button
+                type="submit"
+                disabled={isApplyingPromo}
+                className="rounded border border-gray-400 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-800 transition disabled:opacity-50"
+              >
+                Apply
+              </button>
+            </form>
+
+            {promoMessage && (
+              <div
+                className={`p-2 rounded text-xs flex items-center gap-1.5 ${
+                  promoMessage.isError
+                    ? "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-green-50 text-green-700 border border-green-200"
+                }`}
+              >
+                {promoMessage.isError ? (
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <Check className="h-3.5 w-3.5 shrink-0" />
+                )}
+                <span>{promoMessage.text}</span>
+              </div>
+            )}
+
+            {coupons.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                <span className="text-[11px] font-bold text-gray-500 uppercase">
+                  Applied Promos:
+                </span>
+                {coupons.map((c) => (
+                  <div
+                    key={c.code}
+                    className="flex items-center justify-between bg-amber-50 px-2.5 py-1.5 rounded text-xs border border-amber-200"
+                  >
+                    <div>
+                      <span className="font-bold text-amber-900">{c.code}</span>
+                      {c.appliedCount > 1 && (
+                        <span className="ml-1 text-[10px] font-bold text-red-600 bg-red-100 px-1 rounded">
+                          x{c.appliedCount}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeCoupon(c.code)}
+                      className="text-gray-500 hover:text-red-600 text-xs"
+                      title="Remove promo"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {treasureCode && (
+        <TreasureCelebrationModal
+          isOpen={isTreasureModalOpen}
+          onClose={() => setIsTreasureModalOpen(false)}
+          title="FESTIVE TECHFEST SPONSOR CODE ACTIVATED!"
+          subtitle="You unlocked the special 20% campus partner coupon and found a secret treasure!"
+          treasureCode={treasureCode}
+        />
+      )}
     </div>
   );
 }

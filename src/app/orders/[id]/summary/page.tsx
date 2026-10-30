@@ -99,7 +99,7 @@ export default function OrderSummaryPage() {
         </div>
 
         {/* Actions */}
-        <div className="border-t pt-4 flex flex-wrap gap-4 items-center justify-between text-xs">
+        <div className="border-t pt-4 flex flex-wrap gap-4 items-center justify-between text-xs print:hidden">
           <div className="flex gap-4">
             <Link
               href="/orders"
@@ -109,9 +109,9 @@ export default function OrderSummaryPage() {
             </Link>
             <button
               onClick={() => window.print()}
-              className="text-gray-600 hover:text-black flex items-center gap-1"
+              className="text-gray-600 hover:text-black flex items-center gap-1 cursor-pointer font-medium"
             >
-              <Printer className="h-3.5 w-3.5" /> Print receipt
+              <Printer className="h-3.5 w-3.5" /> Print receipt / invoice
             </button>
           </div>
 
@@ -121,6 +121,27 @@ export default function OrderSummaryPage() {
           >
             Continue Shopping
           </Link>
+        </div>
+
+        {/* Printable Invoice Certificate - Rendered upon printing */}
+        <div className="hidden print:block mt-8 pt-6 border-t-2 border-dashed border-gray-400 text-center font-mono">
+          <p className="text-xs uppercase tracking-widest text-gray-700 font-bold mb-1">
+            *** OFFICIAL ENTROPY 2K26 INVOICE CERTIFICATE ***
+          </p>
+          <p className="text-[11px] text-gray-600 mb-2">
+            Tax Invoice &bull; GSTIN: 27AABCT3518Q1ZQ &bull; Authorized by Campus TechFest
+          </p>
+          <div className="inline-block border-2 border-black px-6 py-3 my-2 bg-gray-50">
+            <span className="text-xs font-bold block text-gray-800">
+              SECRET AUDIT TREASURE CODE:
+            </span>
+            <span className="text-base font-black tracking-widest text-black">
+              TREASURE-INVOICE-PRINT
+            </span>
+          </div>
+          <p className="text-[9px] text-gray-500 mt-2">
+            Thank you for participating in Entropy 2026. Submit this secret treasure code on the Bug Bounty Portal!
+          </p>
         </div>
       </div>
     </div>

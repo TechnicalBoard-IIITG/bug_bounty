@@ -8,11 +8,11 @@ declare global {
 export const prisma =
   globalThis.prismaGlobal ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+    log: ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prismaGlobal = prisma;
-}
+// Always cache client on globalThis across all environments (including production)
+// to prevent exhausting connection pools and re-opening Prisma connections on serverless lambdas!
+globalThis.prismaGlobal = prisma;
 
 export default prisma;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { findInMemoryOrder, updateInMemoryOrderStatus } from "@/lib/orderStore";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function POST(
   try {
     const { id } = params;
 
-    let order = null;
+    let order: any = null;
     try {
       order = await prisma.order.findFirst({
         where: {
@@ -22,7 +23,14 @@ export async function POST(
       // Fallback
     }
 
-    const currentStatus = order?.status || "Delivered";
+    if (!order) {
+      const memOrder = findInMemoryOrder(id);
+      if (memOrder) {
+        order = memOrder;
+      }
+    }
+
+    const currentStatus = order?.status || "Processing";
 
     // HARD_10: Order State Transition Validation
     // When defect is active: Fails to block invalid state transitions,
@@ -37,11 +45,12 @@ export async function POST(
     }
 
     try {
-      if (order) {
+      if (order?.id) {
         const updated = await prisma.order.update({
           where: { id: order.id },
           data: { status: "Cancelled" },
         });
+        updateInMemoryOrderStatus(id, "Cancelled");
         return NextResponse.json({
           success: true,
           message: `Order #${updated.orderNumber} status changed from "${currentStatus}" to "Cancelled".`,
@@ -49,14 +58,14 @@ export async function POST(
         });
       }
     } catch {
-      // Fallback
+      // In-memory fallback
     }
 
-    // Mock in-memory response
+    const updatedMem = updateInMemoryOrderStatus(id, "Cancelled");
     return NextResponse.json({
       success: true,
       message: `Order #${id} status changed from "${currentStatus}" to "Cancelled".`,
-      order: {
+      order: updatedMem || {
         id,
         orderNumber: id,
         status: "Cancelled",

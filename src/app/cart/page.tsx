@@ -7,6 +7,7 @@ import { Trash2, Plus, Minus, Tag, Check, AlertCircle, ShoppingBag } from "lucid
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
 import { UI_CONFIG } from "@/lib/uiDefects";
+import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export default function CartPage() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export default function CartPage() {
   const [promoCodeInput, setPromoCodeInput] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ text: string; isError: boolean } | null>(null);
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [treasureCode, setTreasureCode] = useState<string | null>(null);
+  const [isTreasureModalOpen, setIsTreasureModalOpen] = useState(false);
 
   const subtotal = getSubtotal();
   const discount = getDiscountAmount();
@@ -45,9 +48,15 @@ export default function CartPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        const result = applyCoupon(data.code, data.discountPercent, data.flatDiscount);
+        const c = data.coupon || data;
+        const result = applyCoupon(c.code, c.discountPercent, c.flatDiscount);
         setPromoMessage({ text: result.message, isError: !result.success });
         if (result.success) setPromoCodeInput("");
+
+        if (data.isTreasure && data.treasureCode) {
+          setTreasureCode(data.treasureCode);
+          setIsTreasureModalOpen(true);
+        }
       } else {
         setPromoMessage({
           text: data.error || `Invalid promotional code "${promoCodeInput}"`,
@@ -276,6 +285,16 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {treasureCode && (
+        <TreasureCelebrationModal
+          isOpen={isTreasureModalOpen}
+          onClose={() => setIsTreasureModalOpen(false)}
+          title="FESTIVE TECHFEST SPONSOR CODE ACTIVATED!"
+          subtitle="You unlocked the special 20% campus partner coupon and found a secret treasure!"
+          treasureCode={treasureCode}
+        />
+      )}
     </div>
   );
 }

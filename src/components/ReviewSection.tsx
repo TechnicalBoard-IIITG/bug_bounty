@@ -35,6 +35,20 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   const [reviews, setReviews] = useState<ReviewItem[]>(initialReviews);
   const [selectedStarFilter, setSelectedStarFilter] = useState<number | null>(null);
 
+  // Fetch reviews on mount so newly added reviews persist across page refreshes
+  React.useEffect(() => {
+    fetch(`/api/reviews?productId=${productId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.reviews && data.reviews.length > 0) {
+          const existingIds = new Set(data.reviews.map((r: any) => r.id));
+          const unmergedInitial = initialReviews.filter((ir) => !existingIds.has(ir.id));
+          setReviews([...data.reviews, ...unmergedInitial]);
+        }
+      })
+      .catch(() => {});
+  }, [productId]);
+
   // Write Review Modal Form
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formRating, setFormRating] = useState(5);

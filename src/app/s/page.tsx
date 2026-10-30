@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { ProductItem, INITIAL_PRODUCTS } from "@/lib/mockData";
-import { Star, ChevronRight, ChevronLeft } from "lucide-react";
+import { Star, ChevronRight, ChevronLeft, Copy, Check } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { CURRENCY_SYMBOLS, CURRENCY_RATES } from "@/lib/utils";
 
@@ -24,6 +24,7 @@ function SearchCatalogContent() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedQuickViewProduct, setSelectedQuickViewProduct] = useState<ProductItem | null>(null);
+  const [copiedTreasure, setCopiedTreasure] = useState(false);
 
   // Price Range Inputs
   const [minPriceInput, setMinPriceInput] = useState("");
@@ -247,6 +248,47 @@ function SearchCatalogContent() {
 
         {/* Right Product Grid */}
         <main className="md:col-span-3">
+          {q.trim().toLowerCase() === "entropy" && (
+            <div className="mb-6 p-6 rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-500/15 via-yellow-400/20 to-amber-500/15 shadow-lg shadow-amber-500/10">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="relative shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 p-1 shadow-md flex items-center justify-center text-5xl">
+                  🏆
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="inline-block bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mb-1">
+                    Unlisted VIP Secret
+                  </div>
+                  <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                    The Golden TechFest Trophy
+                  </h2>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Official Entropy 2K26 championship collectible. Found only by curious explorers.
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                    <span className="text-xl font-bold text-green-700">Price: $0.00</span>
+                    <div className="bg-white/95 border border-amber-400 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-sm">
+                      <span className="text-[11px] font-semibold text-gray-600">Treasure Code:</span>
+                      <code className="text-xs font-mono font-black text-amber-700 tracking-wider select-all">
+                        TREASURE-GOATED-ENTROPY
+                      </code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText("TREASURE-GOATED-ENTROPY");
+                          setCopiedTreasure(true);
+                          setTimeout(() => setCopiedTreasure(false), 2000);
+                        }}
+                        className="ml-2 px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] transition flex items-center gap-1"
+                      >
+                        {copiedTreasure ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        <span>{copiedTreasure ? "Copied" : "Copy"}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (

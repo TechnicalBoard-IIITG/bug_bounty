@@ -19,6 +19,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
 import { Currency, CURRENCY_FLAGS } from "@/lib/utils";
+import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export const Header: React.FC = () => {
   const router = useRouter();
@@ -31,6 +32,8 @@ export const Header: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isDark, setIsDark] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
+  const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +53,15 @@ export const Header: React.FC = () => {
     setIsDark(!isDark);
     if (UI_CONFIG.enableThemeDocumentSync) {
       document.documentElement.classList.toggle("dark");
+    }
+
+    const now = Date.now();
+    const recentClicks = [...clickTimestamps.filter((t) => now - t < 2500), now];
+    setClickTimestamps(recentClicks);
+
+    if (recentClicks.length >= 4) {
+      setIsMatrixModalOpen(true);
+      setClickTimestamps([]);
     }
   };
 
@@ -255,6 +267,14 @@ export const Header: React.FC = () => {
           <span className="font-bold text-white text-xs hidden sm:inline ml-1 mb-0.5">Cart</span>
         </Link>
       </div>
+
+      <TreasureCelebrationModal
+        isOpen={isMatrixModalOpen}
+        onClose={() => setIsMatrixModalOpen(false)}
+        title="MATRIX DEVELOPER THEME UNLOCKED!"
+        subtitle="You rapid-toggled the display contrast 4 times and accessed developer matrix mode!"
+        treasureCode="TREASURE-MULTI-CLICK"
+      />
     </header>
   );
 };

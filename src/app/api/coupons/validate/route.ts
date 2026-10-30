@@ -14,39 +14,64 @@ export async function POST(req: NextRequest) {
 
     const trimmedCode = code.trim();
 
+    // The 12 active promotional coupons across the platform
+    const validCoupons: Record<
+      string,
+      { discountPercent: number; flatDiscount: number; isTreasure?: boolean; treasureCode?: string }
+    > = {
+      // 4 Deals Page Festive Offers
+      DIWALI50: { discountPercent: 0, flatDiscount: 50 },
+      FESTIVE20: { discountPercent: 20, flatDiscount: 0 },
+      MEGA25: { discountPercent: 25, flatDiscount: 0 },
+      SUPERDEAL: { discountPercent: 0, flatDiscount: 75 },
+
+      // 3 Product Page Bank & Payment Offers
+      SAVE10: { discountPercent: 10, flatDiscount: 0 },
+      CASHBACK15: { discountPercent: 15, flatDiscount: 0 },
+      PRIME100: { discountPercent: 0, flatDiscount: 100 },
+
+      // 5 Homepage Category Promos
+      WELCOME10: { discountPercent: 10, flatDiscount: 0 },
+      welcome10: { discountPercent: 10, flatDiscount: 0 }, // For HARD_14 defect testing
+      HOLIDAY30: { discountPercent: 30, flatDiscount: 0 },
+      APPEXCLUSIVE: { discountPercent: 10, flatDiscount: 0 },
+      FLAT50: { discountPercent: 0, flatDiscount: 50 },
+
+      // 12th Secret Sponsor Promo
+      ENTROPY2K26: {
+        discountPercent: 20,
+        flatDiscount: 0,
+        isTreasure: true,
+        treasureCode: "TREASURE-ENTROPY-2026",
+      },
+    };
+
     // HARD_14: Case-Sensitive Promo Stacking
-    // When defect is active: Server performs exact case check, treating "WELCOME10" and "welcome10" as distinct coupons
-    let coupon = null;
-    try {
-      if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
-        coupon = await prisma.coupon.findUnique({
-          where: { code: trimmedCode },
-        });
-      } else {
-        coupon = await prisma.coupon.findFirst({
+    let coupon: any = null;
+
+    if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
+      if (validCoupons[trimmedCode]) {
+        coupon = { code: trimmedCode, ...validCoupons[trimmedCode] };
+      }
+    } else {
+      const foundKey = Object.keys(validCoupons).find(
+        (k) => k.toLowerCase() === trimmedCode.toLowerCase()
+      );
+      if (foundKey) {
+        coupon = { code: foundKey, ...validCoupons[foundKey] };
+      }
+    }
+
+    if (!coupon) {
+      try {
+        const dbCoupon = await prisma.coupon.findFirst({
           where: { code: { equals: trimmedCode, mode: "insensitive" } },
         });
-      }
-    } catch {
-      // Memory fallback
-      const validCoupons: Record<string, { discountPercent: number; flatDiscount: number }> = {
-        SAVE10: { discountPercent: 10, flatDiscount: 0 },
-        WELCOME10: { discountPercent: 10, flatDiscount: 0 },
-        welcome10: { discountPercent: 10, flatDiscount: 0 },
-        FLAT50: { discountPercent: 0, flatDiscount: 50 },
-      };
-
-      if (isDefectActive("HARD_14_CASE_SENSITIVE_PROMO_STACKING")) {
-        if (validCoupons[trimmedCode]) {
-          coupon = { code: trimmedCode, ...validCoupons[trimmedCode] };
+        if (dbCoupon) {
+          coupon = dbCoupon;
         }
-      } else {
-        const foundKey = Object.keys(validCoupons).find(
-          (k) => k.toLowerCase() === trimmedCode.toLowerCase()
-        );
-        if (foundKey) {
-          coupon = { code: foundKey, ...validCoupons[foundKey] };
-        }
+      } catch {
+        // Fallback
       }
     }
 
@@ -75,6 +100,8 @@ export async function POST(req: NextRequest) {
         discountPercent: coupon.discountPercent,
         flatDiscount: coupon.flatDiscount,
       },
+      isTreasure: Boolean(coupon.isTreasure),
+      treasureCode: coupon.treasureCode || null,
     });
   } catch (error) {
     console.error("Coupon validation error:", error);
