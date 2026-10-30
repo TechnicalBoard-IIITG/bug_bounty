@@ -14,16 +14,68 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
 
+  const DEMO_ORDERS = [
+    {
+      id: "112-8492041-5928310",
+      orderNumber: "112-8492041-5928310",
+      status: "Delivered", // Target for HARD_10 defect
+      total: 375.84,
+      createdAt: "2026-10-14T10:30:00.000Z",
+      items: [
+        {
+          id: "it-hist-1",
+          title: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
+          unitPrice: 348.0,
+          quantity: 1,
+          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+        },
+      ],
+    },
+    {
+      id: "112-1049281-4920194",
+      orderNumber: "112-1049281-4920194",
+      status: "Processing",
+      total: 89.99,
+      createdAt: "2026-10-16T08:15:00.000Z",
+      items: [
+        {
+          id: "it-hist-2",
+          title: "Logitech MX Master 3S Wireless Performance Mouse",
+          unitPrice: 89.99,
+          quantity: 1,
+          imageUrl: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&q=80",
+        },
+      ],
+    },
+  ];
+
   const fetchOrders = () => {
     setIsLoading(true);
     fetch(`/api/orders?userId=${user?.id || ""}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.orders) {
-          setOrders(data.orders);
+        let allOrders = data.orders && data.orders.length > 0 ? [...data.orders] : [];
+        try {
+          const localGuestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
+          const seen = new Set(allOrders.map((o: any) => o.orderNumber || o.id));
+          for (const lo of localGuestOrders) {
+            const key = lo.orderNumber || lo.id;
+            if (!seen.has(key)) {
+              allOrders.unshift(lo);
+              seen.add(key);
+            }
+          }
+        } catch {}
+
+        if (allOrders.length > 0) {
+          setOrders(allOrders);
+        } else {
+          setOrders(DEMO_ORDERS);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setOrders(DEMO_ORDERS);
+      })
       .finally(() => setIsLoading(false));
   };
 

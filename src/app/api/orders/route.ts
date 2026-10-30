@@ -135,9 +135,9 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
 
     try {
-      const whereClause = userId
+      const whereClause = userId && userId !== "guest"
         ? { userId }
-        : { orderNumber: "112-8492041-5928310" };
+        : { OR: [{ userId: "guest" }, { orderNumber: "112-8492041-5928310" }] };
 
       const orders = await prisma.order.findMany({
         where: whereClause,
