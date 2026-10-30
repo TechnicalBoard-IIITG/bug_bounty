@@ -259,7 +259,7 @@ export const Header: React.FC = () => {
           className="flex items-end px-2 py-1.5 border border-transparent hover:border-white rounded-sm cursor-pointer transition shrink-0 relative"
         >
           <div className="relative">
-            <span className="absolute -top-1.5 left-3 text-[#f08804] font-bold text-sm">
+            <span className="absolute -top-2.5 left-3 text-[#f08804] font-bold text-sm leading-none pointer-events-none select-none">
               {displayedCartCount}
             </span>
             <ShoppingCart className="h-7 w-7 text-white" />
