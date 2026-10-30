@@ -56,10 +56,10 @@ export const Header: React.FC = () => {
     }
 
     const now = Date.now();
-    const recentClicks = [...clickTimestamps.filter((t) => now - t < 2500), now];
+    const recentClicks = [...clickTimestamps.filter((t) => now - t < 4000), now];
     setClickTimestamps(recentClicks);
 
-    if (recentClicks.length >= 4) {
+    if (recentClicks.length >= 10) {
       setIsMatrixModalOpen(true);
       setClickTimestamps([]);
     }
@@ -272,7 +272,7 @@ export const Header: React.FC = () => {
         isOpen={isMatrixModalOpen}
         onClose={() => setIsMatrixModalOpen(false)}
         title="MATRIX DEVELOPER THEME UNLOCKED!"
-        subtitle="You rapid-toggled the display contrast 4 times and accessed developer matrix mode!"
+        subtitle="You rapid-toggled the display contrast 10 times and accessed developer matrix mode!"
         treasureCode="TREASURE-MULTI-CLICK"
       />
     </header>
