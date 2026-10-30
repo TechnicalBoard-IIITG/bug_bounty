@@ -97,13 +97,20 @@ export const INITIAL_PRODUCTS: ProductItem[] = [
     "isDeal": false,
     "badge": "Amazon's Choice",
     "images": [
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80"
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
+      "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80",
+      "https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=800&q=80",
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80"
     ],
     "specs": {
       "Brand": "Fujifilm",
-      "Sensor": "40.2 MP",
-      "Mount": "Fujifilm X",
-      "Video": "6.2K 30fps"
+      "Model Name": "X-T5 Mirrorless Body",
+      "Photo Sensor Size": "APS-C (40.2 MP)",
+      "Image Stabilization": "Sensor-shift (5-axis, up to 7.0 stops)",
+      "Maximum Shutter Speed": "1/180000 Seconds",
+      "Video Capture Resolution": "6.2K 30fps, 4K 60fps, 1080p 240fps",
+      "Mounting Type": "Fujifilm X Mount",
+      "Connectivity Technology": "Wi-Fi, Bluetooth, USB-C, Micro HDMI"
     },
     "category": "Electronics",
     "department": "Electronics"

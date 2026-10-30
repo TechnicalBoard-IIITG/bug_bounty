@@ -10,6 +10,203 @@ import { ProductItem, INITIAL_PRODUCTS } from "@/lib/mockData";
 import { formatPrice, calculateDiscountPercent } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
 
+interface SpecRow {
+  label: string;
+  value: string;
+}
+
+function getTechnicalDetails(product: ProductItem): SpecRow[] {
+  const rows: SpecRow[] = [];
+
+  rows.push({ label: "Brand", value: product.brand });
+  rows.push({ label: "Manufacturer", value: `${product.brand} Corporation` });
+  rows.push({ label: "Model Name", value: product.title.split(" - ")[0] || product.title });
+  rows.push({ label: "Model Year", value: "2024" });
+
+  const categoryDimensions: Record<string, { dim: string; weight: string }> = {
+    Electronics: { dim: "12.95 x 9.1 x 6.38 cm", weight: "557 Grams" },
+    Computers: { dim: "31.26 x 22.12 x 1.55 cm", weight: "1.61 Kilograms" },
+    Fashion: { dim: "30.0 x 20.0 x 10.0 cm", weight: "420 Grams" },
+    "Home & Kitchen": { dim: "34.0 x 31.0 x 37.0 cm", weight: "5.4 Kilograms" },
+    Books: { dim: "19.8 x 12.9 x 2.4 cm", weight: "340 Grams" },
+    "Beauty & Health": { dim: "15.0 x 6.5 x 4.0 cm", weight: "180 Grams" },
+  };
+  const dim = categoryDimensions[product.category] || { dim: "20.0 x 15.0 x 8.0 cm", weight: "500 Grams" };
+  rows.push({ label: "Product Dimensions", value: dim.dim });
+  rows.push({ label: "Item Weight", value: dim.weight });
+
+  if (product.specs) {
+    Object.entries(product.specs).forEach(([k, v]) => {
+      if (k.toLowerCase() !== "brand") {
+        const formattedLabel = k.replace(/([A-Z])/g, " $1").trim();
+        rows.push({ label: formattedLabel, value: v });
+      }
+    });
+  }
+
+  const modelNo = product.id.replace("prod-", "").toUpperCase() + "-2026";
+  rows.push({ label: "Item model number", value: modelNo });
+  rows.push({ label: "Hardware Platform", value: `${product.category} &bull; Consumer Edition` });
+
+  if (product.category === "Electronics" || product.category === "Computers") {
+    rows.push({ label: "Connectivity Technology", value: "Wireless, Bluetooth, USB Type-C, Wi-Fi" });
+    rows.push({ label: "Power Source", value: "Rechargeable Lithium-ion Battery / Corded Electric" });
+  }
+
+  const origins: Record<string, string> = {
+    Sony: "Japan",
+    Fujifilm: "Japan",
+    Samsung: "South Korea",
+    Apple: "USA",
+    Bose: "USA",
+    Garmin: "USA",
+    Nike: "Vietnam",
+    Adidas: "Germany",
+    Patagonia: "USA",
+  };
+  rows.push({ label: "Country of Origin", value: origins[product.brand] || "United States" });
+
+  return rows;
+}
+
+function getAdditionalDetails(product: ProductItem): SpecRow[] {
+  const asinHash = ("B0" + product.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase() + "890123").slice(0, 10);
+  const rank = Math.floor((5.0 - product.rating) * 50) + 12;
+
+  return [
+    { label: "ASIN", value: asinHash },
+    {
+      label: "Customer Reviews",
+      value: `${product.rating} out of 5 stars (${product.reviewCount} ratings)`,
+    },
+    {
+      label: "Best Sellers Rank",
+      value: `#${rank} in ${product.category} (See Top 100 in ${product.category})`,
+    },
+    { label: "Date First Available", value: "October 24, 2023" },
+    { label: "Department", value: product.department || product.category },
+    { label: "Manufacturer", value: `${product.brand} Direct Distribution` },
+    { label: "Net Quantity", value: "1.00 Count" },
+    {
+      label: "Included Components",
+      value: `${product.title}, Standard Accessories, Quick Start Guide, Warranty Card`,
+    },
+  ];
+}
+
+function getAboutThisItemBullets(product: ProductItem): { title: string; text: string }[] {
+  const tailored: Record<string, { title: string; text: string }[]> = {
+    "prod-e03": [
+      {
+        title: "40.2MP X-Trans CMOS 5 HR Sensor",
+        text: "High-resolution BSI imaging sensor paired with the high-speed X-Processor 5 engine for supreme image quality, rich detail, and low-noise performance.",
+      },
+      {
+        title: "5-Axis In-Body Image Stabilization",
+        text: "Provides up to 7.0 stops of compensation, empowering sharp handheld captures in low light and silky-smooth video recording.",
+      },
+      {
+        title: "160MP Pixel Shift Multi-Shot",
+        text: "Captures 20 separate frames with sub-pixel sensor shifts to generate a staggering 160-megapixel image with zero false color artifacts.",
+      },
+      {
+        title: "6.2K/30p & 4K/60p Internal Video",
+        text: "Records in 4:2:2 10-bit color with F-Log2 support for over 13 stops of dynamic range, ideal for color grading and professional post-production.",
+      },
+      {
+        title: "Classic Analog Dial Controls",
+        text: "Tactile, lockable top-plate dials for shutter speed, ISO, and exposure compensation deliver classic photographic ergonomics and instantaneous physical control.",
+      },
+      {
+        title: "Deep Learning AI Subject Detection",
+        text: "Advanced autofocus tracking detects humans, animals, birds, automobiles, motorcycles, airplanes, and trains automatically with pinpoint accuracy.",
+      },
+    ],
+    "prod-e01": [
+      {
+        title: "Industry-Leading Noise Cancellation",
+        text: "Two processors and 8 microphones filter more high and mid-frequency sound than ever before, automatically optimizing to your environment.",
+      },
+      {
+        title: "Magnificent Sound Engineered to Perfection",
+        text: "Specially designed 30mm carbon-fiber composite driver unit delivers natural sound quality with deep bass and sparkling treble.",
+      },
+      {
+        title: "Crystal-Clear Hands-Free Calling",
+        text: "4 beamforming microphones, precise voice pickup technology, and advanced audio signal processing isolate your speech clearly.",
+      },
+      {
+        title: "Up to 30-Hour Battery Life",
+        text: "Long-lasting battery keeps music playing all day; a quick 3-minute charge gives up to 3 hours of playback with optional USB-PD adapter.",
+      },
+      {
+        title: "Multipoint Bluetooth Connection",
+        text: "Seamlessly pair with two devices at the same time and switch effortlessly between phone calls and laptop media.",
+      },
+    ],
+    "prod-e02": [
+      {
+        title: "Quantum HDR OLED Display",
+        text: "Self-illuminating pixels produce pure blacks, limitless contrast, and over a billion cinematic colors certified by Pantone.",
+      },
+      {
+        title: "Neural Quantum Processor 4K",
+        text: "20 specialized neural networks analyze content in real time to intelligently upscale scene by scene into brilliant 4K resolution.",
+      },
+      {
+        title: "Motion Xcelerator Turbo Pro 144Hz",
+        text: "Smooth gaming visuals with virtually no lag, blur, or tearing, supporting VRR, FreeSync Premium Pro, and ALLM.",
+      },
+      {
+        title: "Dolby Atmos & Object Tracking Sound",
+        text: "Top-channel speakers track the action on screen with 3D spatial audio that moves with every character and vehicle.",
+      },
+      {
+        title: "LaserSlim Architectural Design",
+        text: "Ultra-thin profile with minimalist bezels complements any modern living space whether wall-mounted or tabletop.",
+      },
+    ],
+  };
+
+  if (tailored[product.id]) {
+    return tailored[product.id];
+  }
+
+  const sentences = product.description
+    .split(/\.\s+/)
+    .filter((s) => s.trim().length > 0)
+    .map((s) => (s.endsWith(".") ? s : s + "."));
+
+  const bullets: { title: string; text: string }[] = [];
+
+  sentences.forEach((sentence) => {
+    const words = sentence.split(" ");
+    const titleWords = words.slice(0, Math.min(3, words.length)).join(" ").replace(/[.,]/g, "");
+    bullets.push({
+      title: titleWords,
+      text: sentence,
+    });
+  });
+
+  if (product.specs) {
+    Object.entries(product.specs).forEach(([k, v]) => {
+      if (bullets.length < 5) {
+        bullets.push({
+          title: k,
+          text: `Engineered with high-grade ${k.toLowerCase()} specifications (${v}) delivering verified performance and durability.`,
+        });
+      }
+    });
+  }
+
+  bullets.push({
+    title: "Official Brand Assurance",
+    text: `100% genuine ${product.brand} product backed by official manufacturer warranty and Amazon customer care.`,
+  });
+
+  return bullets;
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const id = (params.id as string) || "";
@@ -78,6 +275,10 @@ export default function ProductDetailPage() {
     { name: "Pro Edition (+ $50.00)", offset: 50 },
     { name: "Ultra Deluxe Edition (+ $120.00)", offset: 120 },
   ];
+
+  const technicalDetails = getTechnicalDetails(product);
+  const additionalDetails = getAdditionalDetails(product);
+  const aboutBullets = getAboutThisItemBullets(product);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 text-amazon-text">
@@ -236,31 +437,37 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Specs Table */}
+          {/* Quick Specs Overview Table (Amazon Style) */}
           {product.specs && Object.keys(product.specs).length > 0 && (
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
-                Technical Specifications
-              </h4>
-              <div className="grid grid-cols-2 gap-y-1.5 text-xs">
-                {Object.entries(product.specs).map(([k, v]) => (
-                  <React.Fragment key={k}>
-                    <span className="font-semibold text-gray-600">{k}</span>
-                    <span className="text-gray-900">{v}</span>
-                  </React.Fragment>
-                ))}
-              </div>
+            <div className="border-t border-gray-200 pt-4 pb-2">
+              <table className="w-full text-xs">
+                <tbody>
+                  {Object.entries(product.specs).map(([k, v]) => (
+                    <tr key={k} className="border-b border-gray-100 last:border-none">
+                      <td className="py-1.5 font-bold text-gray-900 w-2/5 pr-2 align-top">{k}</td>
+                      <td className="py-1.5 text-gray-800 w-3/5 align-top">{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* About This Item */}
-          <div className="border-t border-gray-200 pt-4 space-y-2">
-            <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wide">
+          <hr className="my-3 border-gray-200" />
+
+          {/* About This Item (Authentic Amazon Bulleted List) */}
+          <div className="space-y-2">
+            <h3 className="font-bold text-base text-gray-900 mb-2">
               About this item
-            </h4>
-            <p className="text-xs text-gray-700 leading-relaxed">
-              {product.description}
-            </p>
+            </h3>
+            <ul className="list-disc pl-5 space-y-2 text-xs sm:text-[13px] text-gray-800 leading-relaxed">
+              {aboutBullets.map((bullet, idx) => (
+                <li key={idx} className="leading-snug">
+                  <span className="font-bold text-gray-900">{bullet.title} &ndash; </span>
+                  <span>{bullet.text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
@@ -270,6 +477,79 @@ export default function ProductDetailPage() {
             product={product}
             selectedVariantPrice={effectivePrice}
           />
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* AUTHENTIC AMAZON PRODUCT INFORMATION & TECHNICAL DETAILS SECTION          */}
+      {/* ========================================================================= */}
+      <div className="mt-12 border-t border-gray-300 pt-8" id="productDetails_feature_div">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Product information</h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* Column 1: Technical Details Table */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-gray-900">Technical Details</h3>
+            <div className="border border-gray-300 rounded overflow-hidden">
+              <table className="w-full text-xs border-collapse">
+                <tbody>
+                  {technicalDetails.map((item, idx) => (
+                    <tr
+                      key={item.label}
+                      className={idx % 2 === 0 ? "bg-[#f3f3f3]" : "bg-white"}
+                    >
+                      <th className="py-2.5 px-3 text-left font-semibold text-gray-700 w-2/5 border-b border-gray-200 align-top">
+                        {item.label}
+                      </th>
+                      <td
+                        className="py-2.5 px-3 text-gray-900 w-3/5 border-b border-gray-200 align-top"
+                        dangerouslySetInnerHTML={{ __html: item.value }}
+                      />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Column 2: Additional Information Table & Warranty */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-gray-900">Additional Information</h3>
+            <div className="border border-gray-300 rounded overflow-hidden">
+              <table className="w-full text-xs border-collapse">
+                <tbody>
+                  {additionalDetails.map((item, idx) => (
+                    <tr
+                      key={item.label}
+                      className={idx % 2 === 0 ? "bg-[#f3f3f3]" : "bg-white"}
+                    >
+                      <th className="py-2.5 px-3 text-left font-semibold text-gray-700 w-2/5 border-b border-gray-200 align-top">
+                        {item.label}
+                      </th>
+                      <td
+                        className="py-2.5 px-3 text-gray-900 w-3/5 border-b border-gray-200 align-top"
+                        dangerouslySetInnerHTML={{ __html: item.value }}
+                      />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Warranty & Support Card */}
+            <div className="bg-[#fcf8e3]/50 border border-[#faebcc] rounded p-4 text-xs space-y-2 mt-4">
+              <h4 className="font-bold text-gray-900">Warranty &amp; Support</h4>
+              <p className="text-gray-700 leading-relaxed">
+                <strong>Amazon.com Return Policy:</strong> You may return any new, unopened item within 30 days of delivery for a full refund or replacement under Amazon&apos;s Return Guarantee.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                <strong>Manufacturer Warranty:</strong> 1-Year Official Hardware Warranty provided by {product.brand}. To obtain warranty service or technical assistance, contact {product.brand} authorized customer care.
+              </p>
+              <p className="text-gray-500 text-[11px] pt-1 border-t border-amber-200/60">
+                Would you like to <strong>tell us about a lower price?</strong>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
