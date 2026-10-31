@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +36,26 @@ export async function PUT(req: NextRequest) {
       updateData.role = body.role;
     }
 
-    try {
-      const updated = await prisma.user.update({
-        where: { id },
-        data: updateData,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          avatarUrl: true,
-        },
-      });
-
-      return NextResponse.json({ success: true, user: updated });
-    } catch {
+    if (isDbActiveSync()) {
+      const updated = await safeDbQuery(
+        () =>
+          prisma.user.update({
+            where: { id },
+            data: updateData,
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatarUrl: true,
+            },
+          }),
+        null
+      );
+      if (updated) {
+        return NextResponse.json({ success: true, user: updated });
+      }
+    }
       // Memory fallback
       return NextResponse.json({
         success: true,
@@ -61,7 +67,6 @@ export async function PUT(req: NextRequest) {
           avatarUrl: avatarUrl || null,
         },
       });
-    }
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -12,23 +13,26 @@ export async function GET(
     const { id } = params;
     const requestingUserId = req.nextUrl.searchParams.get("userId") || "guest";
 
-    try {
-      const order = await prisma.order.findFirst({
-        where: {
-          OR: [{ id }, { orderNumber: id }],
-        },
-        include: {
-          items: true,
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-        },
-      });
+    let order: any = null;
+    if (isDbActiveSync()) {
+      order = await safeDbQuery(
+        () =>
+          prisma.order.findFirst({
+            where: {
+              OR: [{ id }, { orderNumber: id }],
+            },
+            include: {
+              items: true,
+              user: {
+                select: { id: true, name: true, email: true },
+              },
+            },
+          }),
+        null
+      );
+    }
 
-      if (!order) {
-        return NextResponse.json({ error: "Order not found" }, { status: 404 });
-      }
-
+    if (order) {
       // HARD_02: Order History Parameter Enumeration
       // When defect is active: Endpoint lacks session ownership validation,
       // allowing any user to view other customers' orders by incrementing the URL ID parameter.
@@ -42,8 +46,9 @@ export async function GET(
       }
 
       return NextResponse.json({ order });
-    } catch {
-      // In-memory mock response for Hard 2 testing if DB is offline
+    }
+
+    // In-memory mock response for Hard 2 testing if DB is offline
       const mockOrder = {
         id,
         orderNumber: id.startsWith("112-") ? id : `112-${id}-9999999`,
@@ -67,7 +72,6 @@ export async function GET(
       };
 
       return NextResponse.json({ order: mockOrder });
-    }
   } catch (error) {
     console.error("Order detail error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

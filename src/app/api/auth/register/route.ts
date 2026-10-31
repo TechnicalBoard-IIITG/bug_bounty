@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -30,21 +31,30 @@ export async function POST(req: NextRequest) {
 
     let newUser = null;
 
-    try {
-      const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    if (isDbActiveSync()) {
+      const existing = await safeDbQuery(
+        () => prisma.user.findUnique({ where: { email: cleanEmail } }),
+        null
+      );
       if (existing) {
         return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
       }
 
-      newUser = await prisma.user.create({
-        data: {
-          name: cleanName,
-          email: cleanEmail,
-          password: hashedPassword,
-          role: "customer",
-        },
-      });
-    } catch {
+      newUser = await safeDbQuery(
+        () =>
+          prisma.user.create({
+            data: {
+              name: cleanName,
+              email: cleanEmail,
+              password: hashedPassword,
+              role: "customer",
+            },
+          }),
+        null
+      );
+    }
+
+    if (!newUser) {
       newUser = {
         id: `user-${Date.now()}`,
         name: cleanName,
@@ -65,17 +75,28 @@ export async function POST(req: NextRequest) {
       { expiresIn: "7d" }
     );
 
-    return NextResponse.json({
+    const userProfile = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      avatarUrl: newUser.avatarUrl,
+    };
+
+    const response = NextResponse.json({
       success: true,
       token,
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        avatarUrl: newUser.avatarUrl,
-      },
+      user: userProfile,
     });
+
+    response.cookies.set("amazon_session_token", token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

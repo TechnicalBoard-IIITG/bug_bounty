@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -62,16 +63,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!coupon) {
-      try {
-        const dbCoupon = await prisma.coupon.findFirst({
-          where: { code: { equals: trimmedCode, mode: "insensitive" } },
-        });
-        if (dbCoupon) {
-          coupon = dbCoupon;
-        }
-      } catch {
-        // Fallback
+    if (!coupon && isDbActiveSync()) {
+      const dbCoupon = await safeDbQuery(
+        () =>
+          prisma.coupon.findFirst({
+            where: { code: { equals: trimmedCode, mode: "insensitive" } },
+          }),
+        null
+      );
+      if (dbCoupon) {
+        coupon = dbCoupon;
       }
     }
 

@@ -5,10 +5,11 @@ let isDbOnline = false;
 let lastCheckTime = 0;
 const CHECK_COOLDOWN_MS = 60000; // Only retry remote DB once per minute if failing
 let hasCheckedInitial = false;
+let isProbing = false;
 
 /**
  * Checks whether the PostgreSQL database is reachable.
- * Protects against 5-second TCP connection hangs when the database is offline or blocked.
+ * Protects against TCP connection hangs when the database is offline, blocked, or in standby.
  */
 export async function isDbReachable(): Promise<boolean> {
   const now = Date.now();
@@ -40,9 +41,19 @@ export async function isDbReachable(): Promise<boolean> {
 
 /**
  * Synchronous check of the current circuit-breaker state without blocking.
+ * If initial check has not completed, triggers a non-blocking background probe
+ * and returns false immediately (0ms) so user requests are NEVER delayed.
  */
 export function isDbActiveSync(): boolean {
-  if (!hasCheckedInitial) return false;
+  if (!hasCheckedInitial) {
+    if (!isProbing) {
+      isProbing = true;
+      isDbReachable().finally(() => {
+        isProbing = false;
+      });
+    }
+    return false;
+  }
   if (!isDbOnline && Date.now() - lastCheckTime < CHECK_COOLDOWN_MS) {
     return false;
   }
@@ -56,4 +67,25 @@ export function markDbOffline(): void {
   isDbOnline = false;
   lastCheckTime = Date.now();
   hasCheckedInitial = true;
+}
+
+/**
+ * Executes a database query safely with 0ms fast-path when offline
+ * and an 800ms race timeout when online, ensuring no page or API
+ * ever hangs for more than sub-second latency.
+ */
+export async function safeDbQuery<T>(queryFn: () => Promise<T>, fallback: T): Promise<T> {
+  if (!isDbActiveSync()) {
+    return fallback;
+  }
+
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("DB query timeout")), 800)
+    );
+    return await Promise.race([queryFn(), timeoutPromise]);
+  } catch {
+    markDbOffline();
+    return fallback;
+  }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
 import { addInMemoryReview, getInMemoryReviews } from "@/lib/reviewStore";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -11,15 +12,15 @@ export async function GET(req: NextRequest) {
     const productId = searchParams.get("productId");
 
     let dbReviews: any[] = [];
-    try {
-      if (productId) {
-        dbReviews = await prisma.review.findMany({
-          where: { productId },
-          orderBy: { createdAt: "desc" },
-        });
-      }
-    } catch {
-      // Fallback
+    if (productId && isDbActiveSync()) {
+      dbReviews = await safeDbQuery(
+        () =>
+          prisma.review.findMany({
+            where: { productId },
+            orderBy: { createdAt: "desc" },
+          }),
+        []
+      );
     }
 
     const memReviews = getInMemoryReviews(productId);
@@ -75,22 +76,24 @@ export async function POST(req: NextRequest) {
     // Save to memory immediately so submission is instant and always available
     addInMemoryReview(reviewData);
 
-    // Also persist to DB in background/try-catch
-    try {
-      await prisma.review.create({
-        data: {
-          productId,
-          userId: userId && userId !== "guest" ? userId : null,
-          userName: reviewData.userName,
-          rating: reviewData.rating,
-          title: reviewData.title,
-          comment: reviewData.comment,
-          isVerifiedPurchase: true,
-          helpfulVotes: 0,
-        },
-      });
-    } catch {
-      // Memory store is already populated
+    // Also persist to DB safely in background if active
+    if (isDbActiveSync()) {
+      await safeDbQuery(
+        () =>
+          prisma.review.create({
+            data: {
+              productId,
+              userId: userId && userId !== "guest" ? userId : null,
+              userName: reviewData.userName,
+              rating: reviewData.rating,
+              title: reviewData.title,
+              comment: reviewData.comment,
+              isVerifiedPurchase: true,
+              helpfulVotes: 0,
+            },
+          }),
+        null
+      );
     }
 
     return NextResponse.json({ success: true, review: reviewData });

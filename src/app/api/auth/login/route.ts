@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +20,11 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     let user = null;
 
-    try {
-      user = await prisma.user.findUnique({ where: { email: cleanEmail } });
-    } catch {
-      // Fallback
+    if (isDbActiveSync()) {
+      user = await safeDbQuery(
+        () => prisma.user.findUnique({ where: { email: cleanEmail } }),
+        null
+      );
     }
 
     if (!user) {
@@ -53,6 +55,14 @@ export async function POST(req: NextRequest) {
       { expiresIn: "7d" }
     );
 
+    const userProfile = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+    };
+
     // Compute redirect URL
     let targetRedirect = redirect || "/";
 
@@ -70,18 +80,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token,
+      user: userProfile,
       redirectUrl: targetRedirect,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatarUrl: user.avatarUrl,
-      },
     });
+
+    response.cookies.set("amazon_session_token", token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

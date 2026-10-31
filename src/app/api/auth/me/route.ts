@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { isTokenRevoked } from "@/lib/tokenRevocation";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -28,28 +29,22 @@ export async function GET(req: NextRequest) {
     }
 
     let user = null;
-    try {
-      user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          avatarUrl: true,
-          createdAt: true,
-        },
-      });
-    } catch {
-      // Memory fallback
-      user = {
-        id: decoded.id,
-        name: decoded.name,
-        email: decoded.email,
-        role: decoded.role || "customer",
-        avatarUrl: null,
-        createdAt: new Date().toISOString(),
-      };
+    if (isDbActiveSync()) {
+      user = await safeDbQuery(
+        () =>
+          prisma.user.findUnique({
+            where: { id: decoded.id },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatarUrl: true,
+              createdAt: true,
+            },
+          }),
+        null
+      );
     }
 
     if (!user) {
@@ -64,7 +59,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error("Auth me error:", error);
+    console.error("Auth verification error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

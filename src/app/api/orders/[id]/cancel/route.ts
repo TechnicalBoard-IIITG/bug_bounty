@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
 import { findInMemoryOrder, updateInMemoryOrderStatus } from "@/lib/orderStore";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +15,16 @@ export async function POST(
 
     let order: any = findInMemoryOrder(id);
 
-    if (!order) {
-      try {
-        order = await prisma.order.findFirst({
-          where: {
-            OR: [{ id }, { orderNumber: id }],
-          },
-        });
-      } catch {
-        // Fallback
-      }
+    if (!order && isDbActiveSync()) {
+      order = await safeDbQuery(
+        () =>
+          prisma.order.findFirst({
+            where: {
+              OR: [{ id }, { orderNumber: id }],
+            },
+          }),
+        null
+      );
     }
 
     const currentStatus = order?.status || "Processing";
@@ -49,20 +50,22 @@ export async function POST(
       });
     }
 
-    try {
-      if (order?.id) {
-        const updated = await prisma.order.update({
-          where: { id: order.id },
-          data: { status: "Cancelled" },
-        });
+    if (order?.id && isDbActiveSync()) {
+      const updated = await safeDbQuery(
+        () =>
+          prisma.order.update({
+            where: { id: order.id },
+            data: { status: "Cancelled" },
+          }),
+        null
+      );
+      if (updated) {
         return NextResponse.json({
           success: true,
           message: `Order #${updated.orderNumber} status changed from "${currentStatus}" to "Cancelled".`,
           order: updated,
         });
       }
-    } catch {
-      // In-memory fallback
     }
 
     return NextResponse.json({

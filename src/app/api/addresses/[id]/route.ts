@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -17,28 +18,31 @@ export async function DELETE(
 
     // MED_14: Address Management List Indexing
     // Fails to map the targeted address ID correctly, deleting the first address record instead
-    if (isDefectActive("MED_14_ADDRESS_DELETE_INDEXING_OFFSET") && userId) {
-      try {
-        const userAddresses = await prisma.address.findMany({
-          where: { userId },
-          orderBy: { createdAt: "asc" },
-        });
-        if (userAddresses.length > 0) {
-          targetIdToDelete = userAddresses[0].id;
-        }
-      } catch {
-        // Fallback
+    if (isDefectActive("MED_14_ADDRESS_DELETE_INDEXING_OFFSET") && userId && isDbActiveSync()) {
+      const userAddresses = await safeDbQuery(
+        () =>
+          prisma.address.findMany({
+            where: { userId },
+            orderBy: { createdAt: "asc" },
+          }),
+        []
+      );
+      if (userAddresses.length > 0) {
+        targetIdToDelete = userAddresses[0].id;
       }
     }
 
-    try {
-      await prisma.address.delete({
-        where: { id: targetIdToDelete },
-      });
-      return NextResponse.json({ success: true, deletedId: targetIdToDelete });
-    } catch {
-      return NextResponse.json({ success: true, deletedId: targetIdToDelete });
+    if (isDbActiveSync()) {
+      await safeDbQuery(
+        () =>
+          prisma.address.delete({
+            where: { id: targetIdToDelete },
+          }),
+        null
+      );
     }
+
+    return NextResponse.json({ success: true, deletedId: targetIdToDelete });
   } catch (error) {
     console.error("Address DELETE error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

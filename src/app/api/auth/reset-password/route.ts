@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { isDefectActive } from "@/config/defects.config";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Token and new password are required" }, { status: 400 });
     }
 
-    let resetRecord = null;
-    try {
-      resetRecord = await prisma.passwordResetToken.findUnique({
-        where: { token },
-      });
-    } catch {
-      // Fallback
+    let resetRecord: any = null;
+    if (isDbActiveSync()) {
+      resetRecord = await safeDbQuery(
+        () =>
+          prisma.passwordResetToken.findUnique({
+            where: { token },
+          }),
+        null
+      );
     }
 
     // HARD_05: Password Reset Token Invalidation
@@ -32,22 +35,26 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    try {
-      if (resetRecord) {
-        await prisma.user.updateMany({
-          where: { email: resetRecord.email },
-          data: { password: hashedPassword },
-        });
+    if (resetRecord && isDbActiveSync()) {
+      await safeDbQuery(
+        () =>
+          prisma.user.updateMany({
+            where: { email: resetRecord.email },
+            data: { password: hashedPassword },
+          }),
+        null
+      );
 
-        if (!isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE")) {
-          await prisma.passwordResetToken.update({
-            where: { id: resetRecord.id },
-            data: { used: true },
-          });
-        }
+      if (!isDefectActive("HARD_05_PASSWORD_RESET_TOKEN_REUSABLE")) {
+        await safeDbQuery(
+          () =>
+            prisma.passwordResetToken.update({
+              where: { id: resetRecord.id },
+              data: { used: true },
+            }),
+          null
+        );
       }
-    } catch {
-      // Fallback
     }
 
     return NextResponse.json({

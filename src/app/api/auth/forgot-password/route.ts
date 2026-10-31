@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { isDbActiveSync, safeDbQuery } from "@/lib/dbCircuitBreaker";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +15,18 @@ export async function POST(req: NextRequest) {
 
     const token = crypto.randomBytes(24).toString("hex");
 
-    try {
-      await prisma.passwordResetToken.create({
-        data: {
-          email: email.trim().toLowerCase(),
-          token,
-          used: false,
-        },
-      });
-    } catch {
-      // Fallback
+    if (isDbActiveSync()) {
+      await safeDbQuery(
+        () =>
+          prisma.passwordResetToken.create({
+            data: {
+              email: email.trim().toLowerCase(),
+              token,
+              used: false,
+            },
+          }),
+        null
+      );
     }
 
     return NextResponse.json({
