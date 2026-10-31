@@ -17,7 +17,7 @@ interface AddressItem {
 }
 
 export default function AddressesPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -94,6 +94,30 @@ export default function AddressesPage() {
       console.error("Add address error:", e);
     }
   };
+
+  if (!authLoading && !user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-amazon-text text-center space-y-6">
+        <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 space-y-4">
+          <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amazon-orange">
+            <MapPin className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Sign in to manage your addresses</h2>
+          <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+            Please sign in to view, add, or delete your saved shipping addresses.
+          </p>
+          <div className="pt-2 space-y-2 max-w-xs mx-auto">
+            <Link
+              href="/login?redirect=/account/addresses"
+              className="block w-full py-2.5 bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs rounded-md shadow-sm transition"
+            >
+              Sign in to your account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 text-amazon-text space-y-6">

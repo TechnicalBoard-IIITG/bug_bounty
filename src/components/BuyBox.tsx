@@ -6,6 +6,7 @@ import { MapPin, ShieldCheck, Check, Plus, Minus } from "lucide-react";
 import { ProductItem } from "@/lib/mockData";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
+import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
 
 interface BuyBoxProps {
@@ -15,6 +16,7 @@ interface BuyBoxProps {
 
 export const BuyBox: React.FC<BuyBoxProps> = ({ product, selectedVariantPrice }) => {
   const router = useRouter();
+  const { user } = useAuth();
   const addItem = useCartStore((s) => s.addItem);
   const currency = useCartStore((s) => s.currency);
   const [quantity, setQuantity] = useState(1);
@@ -54,6 +56,10 @@ export const BuyBox: React.FC<BuyBoxProps> = ({ product, selectedVariantPrice })
 
   const handleBuyNow = () => {
     handleAddToCart();
+    if (!user) {
+      router.push("/login?redirect=/checkout");
+      return;
+    }
     router.push("/checkout");
   };
 

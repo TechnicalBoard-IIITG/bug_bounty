@@ -17,7 +17,13 @@ import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal"
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login?redirect=/checkout");
+    }
+  }, [user, isLoading, router]);
   const items = useCartStore((s) => s.items);
   const getSubtotal = useCartStore((s) => s.getSubtotal);
   const getDiscountAmount = useCartStore((s) => s.getDiscountAmount);
@@ -121,12 +127,16 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      router.push("/login?redirect=/checkout");
+      return;
+    }
     if (items.length === 0) return;
     setIsSubmitting(true);
 
     try {
       const payload = {
-        userId: user?.id || "guest",
+        userId: user.id,
         items: items.map((i) => ({
           productId: i.productId,
           title: i.title,

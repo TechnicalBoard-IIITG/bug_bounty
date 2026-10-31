@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Star, ThumbsUp, CheckCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
@@ -32,6 +33,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   initialReviewCount,
   initialReviews,
 }) => {
+  const router = useRouter();
   const { user } = useAuth();
   const defaultMock = getMockReviewsForProduct(productId, productTitle);
   const effectiveInitial = initialReviews && initialReviews.length >= 12 
@@ -72,6 +74,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      router.push(`/login?redirect=/dp/${productId}`);
+      return;
+    }
     if (!formTitle.trim() || !formComment.trim()) return;
 
     setIsSubmitting(true);
@@ -84,8 +90,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
           rating: formRating,
           title: formTitle,
           comment: formComment,
-          userName: user?.name || "Verified Amazon Customer",
-          userId: user?.id || "guest",
+          userName: user.name || "Verified Amazon Customer",
+          userId: user.id,
         }),
       });
       const data = await res.json();
@@ -181,11 +187,22 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
               Share your thoughts with other customers
             </p>
             <button
-              onClick={() => setIsFormOpen(true)}
+              onClick={() => {
+                if (!user) {
+                  router.push(`/login?redirect=/dp/${productId}`);
+                  return;
+                }
+                setIsFormOpen(true);
+              }}
               className="w-full rounded border border-gray-300 py-1.5 text-xs font-semibold hover:bg-gray-50 shadow-sm"
             >
               Write a customer review
             </button>
+            {!user && (
+              <p className="text-[11px] text-gray-500 mt-1.5 text-center">
+                Sign in required to submit reviews
+              </p>
+            )}
           </div>
         </div>
 

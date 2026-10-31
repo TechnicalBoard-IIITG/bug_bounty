@@ -36,6 +36,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { productId, rating, title, comment, userName, userId } = body;
 
+    // Strict User Isolation & Auth Gate: Reviews require authenticated user account
+    if (!userId || userId === "guest" || userId === "guest-user") {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in to submit a review." },
+        { status: 401 }
+      );
+    }
+
     if (!productId || !rating || !title || !comment) {
       return NextResponse.json(
         { error: "productId, rating, title, and comment are required" },

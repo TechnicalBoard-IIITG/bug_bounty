@@ -7,6 +7,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { INITIAL_PRODUCTS, ProductItem } from "@/lib/mockData";
 import { ChevronRight, Zap, Sparkles } from "lucide-react";
+import { SignInPromptBanner } from "@/components/SignInPromptBanner";
+import { SignInGateModal } from "@/components/SignInGateModal";
 
 export default function HomePage() {
   const [products, setProducts] = useState<ProductItem[]>(INITIAL_PRODUCTS);
@@ -37,6 +39,9 @@ export default function HomePage() {
       <HeroCarousel />
 
       <div className="max-w-7xl mx-auto px-4 -mt-16 sm:-mt-24 md:-mt-36 relative z-20 space-y-8">
+        {/* Amazon Auth Onboarding & Isolation Banner */}
+        <SignInPromptBanner />
+
         {/* 4-Card Category Promo Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Electronics */}
@@ -320,6 +325,9 @@ export default function HomePage() {
         product={selectedQuickViewProduct}
         onClose={() => setSelectedQuickViewProduct(null)}
       />
+
+      {/* First-arrival Mandatory Sign-In Gate Modal */}
+      <SignInGateModal />
     </div>
   );
 }

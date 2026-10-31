@@ -8,7 +8,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const currency = useCartStore((s) => s.currency);
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,33 +50,22 @@ export default function OrdersPage() {
   ];
 
   const fetchOrders = () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
-    const userIdParam = user?.id ? `?userId=${encodeURIComponent(user.id)}` : "?userId=guest";
+    const userIdParam = `?userId=${encodeURIComponent(user.id)}`;
     fetch(`/api/orders${userIdParam}`)
       .then((res) => res.json())
       .then((data) => {
         let allOrders = data.orders && data.orders.length > 0 ? [...data.orders] : [...DEMO_ORDERS];
-
-        // Only attach guest orders if the user is currently browsing as a guest (not logged into an account)
-        if (!user) {
-          try {
-            const localGuestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
-            const seen = new Set(allOrders.map((o: any) => o.orderNumber || o.id));
-            for (const lo of localGuestOrders) {
-              const key = lo.orderNumber || lo.id;
-              if (!seen.has(key)) {
-                allOrders.unshift(lo);
-                seen.add(key);
-              }
-            }
-          } catch {}
-        }
-
         let finalOrders = allOrders;
 
-        // Apply persisted cancellations from localStorage so cancelled orders persist across page reloads
+        // Apply persisted cancellations scoped per user account
         try {
-          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          const userStorageKey = `entropy_cancelled_orders_${user.id}`;
+          const cancelledMap = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
           finalOrders = finalOrders.map((o: any) => {
             const key = o.orderNumber || o.id;
             return cancelledMap[key] ? { ...o, status: cancelledMap[key] } : o;
@@ -88,7 +77,8 @@ export default function OrdersPage() {
       .catch(() => {
         let finalOrders = [...DEMO_ORDERS];
         try {
-          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          const userStorageKey = `entropy_cancelled_orders_${user.id}`;
+          const cancelledMap = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
           finalOrders = finalOrders.map((o: any) => {
             const key = o.orderNumber || o.id;
             return cancelledMap[key] ? { ...o, status: cancelledMap[key] } : o;
@@ -104,6 +94,7 @@ export default function OrdersPage() {
   }, [user]);
 
   const handleCancelOrder = async (orderId: string, currentStatus: string) => {
+    if (!user) return;
     const confirmCancel = confirm(
       `Are you sure you want to request cancellation for Order #${orderId} (Status: ${currentStatus})?`
     );
@@ -121,17 +112,12 @@ export default function OrdersPage() {
           prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: "Cancelled" } : o))
         );
 
-        // Persist cancellation so navigating back or refreshing never resets back to Delivered
+        // Persist cancellation strictly scoped to this user
         try {
-          const guestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
-          const updatedGuestOrders = guestOrders.map((o: any) =>
-            o.id === orderId || o.orderNumber === orderId ? { ...o, status: "Cancelled" } : o
-          );
-          localStorage.setItem("entropy_guest_orders", JSON.stringify(updatedGuestOrders));
-
-          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          const userStorageKey = `entropy_cancelled_orders_${user.id}`;
+          const cancelledMap = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
           cancelledMap[orderId] = "Cancelled";
-          localStorage.setItem("entropy_cancelled_orders", JSON.stringify(cancelledMap));
+          localStorage.setItem(userStorageKey, JSON.stringify(cancelledMap));
         } catch {}
       } else {
         alert(data.error || "Order cancellation failed.");
@@ -140,6 +126,36 @@ export default function OrdersPage() {
       console.error("Cancel order error:", e);
     }
   };
+
+  if (!authLoading && !user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-amazon-text text-center space-y-6">
+        <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 space-y-4">
+          <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amazon-orange">
+            <Package className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Sign in to see your orders</h2>
+          <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+            Track packages, view past order history, and submit returns. To ensure all your orders and progress are privately isolated, please sign in to your account.
+          </p>
+          <div className="pt-2 space-y-2 max-w-xs mx-auto">
+            <Link
+              href="/login?redirect=/orders"
+              className="block w-full py-2.5 bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs rounded-md shadow-sm transition"
+            >
+              Sign in to your account
+            </Link>
+            <Link
+              href="/register"
+              className="block w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-md border border-gray-300 transition"
+            >
+              New customer? Start here.
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 text-amazon-text space-y-6">

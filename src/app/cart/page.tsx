@@ -3,14 +3,16 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, Minus, Tag, Check, AlertCircle, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, Tag, Check, AlertCircle, ShoppingBag, Lock } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { useAuth } from "@/context/AuthContext";
 import { formatPrice } from "@/lib/utils";
 import { UI_CONFIG } from "@/lib/uiDefects";
 import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export default function CartPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const items = useCartStore((s) => s.items);
   const currency = useCartStore((s) => s.currency);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -202,9 +204,21 @@ export default function CartPage() {
               )}
             </div>
 
+            {!user && (
+              <div className="p-2.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900 leading-snug">
+                <span className="font-bold">Sign-in required:</span> Please sign in to proceed to checkout and ensure your order is isolated to your team.
+              </div>
+            )}
+
             <div className={`pt-2 ${UI_CONFIG.mobileCheckoutOverflowClass}`}>
               <button
-                onClick={() => router.push("/checkout")}
+                onClick={() => {
+                  if (!user) {
+                    router.push("/login?redirect=/checkout");
+                    return;
+                  }
+                  router.push("/checkout");
+                }}
                 id="proceed-to-checkout-btn"
                 className="w-full py-2.5 px-4 rounded-full bg-amazon-yellow hover:bg-amazon-yellowHover font-bold text-xs text-amazon-text shadow-sm transition"
               >

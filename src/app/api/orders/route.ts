@@ -10,7 +10,15 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, discount = 0, shippingFee = 0, userId = "guest", selectedVariantPrice } = body;
+    const { items, discount = 0, shippingFee = 0, userId, selectedVariantPrice } = body;
+
+    // Strict User Isolation: Orders require a valid authenticated account
+    if (!userId || userId === "guest") {
+      return NextResponse.json(
+        { error: "Authentication required to place orders. Please sign in." },
+        { status: 401 }
+      );
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });

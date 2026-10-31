@@ -6,7 +6,7 @@ import { User, Check, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, isLoading: authLoading } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
   const [role, setRole] = useState(user?.role || "customer");
@@ -69,6 +69,30 @@ export default function ProfilePage() {
       setIsSaving(false);
     }
   };
+
+  if (!authLoading && !user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-amazon-text text-center space-y-6">
+        <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 space-y-4">
+          <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amazon-orange">
+            <User className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Sign in to edit your profile</h2>
+          <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+            Please sign in to update your avatar, name, and public profile settings.
+          </p>
+          <div className="pt-2 space-y-2 max-w-xs mx-auto">
+            <Link
+              href="/login?redirect=/account/profile"
+              className="block w-full py-2.5 bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs rounded-md shadow-sm transition"
+            >
+              Sign in to your account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 text-amazon-text space-y-6">
