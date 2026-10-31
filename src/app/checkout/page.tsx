@@ -308,19 +308,26 @@ export default function CheckoutPage() {
 
           {/* STEP 2: Payment Method */}
           <div className="bg-white rounded-lg border border-gray-300 p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+            <div
+              onClick={() => setActiveStep(2)}
+              className="flex items-center justify-between cursor-pointer"
+            >
               <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
                 <span className="flex h-6 w-6 rounded-full bg-amazon-nav text-white text-xs items-center justify-center font-bold">
                   2
                 </span>
                 Payment Method
               </h2>
-              {activeStep > 2 && (
+              {activeStep !== 2 && (
                 <button
-                  onClick={() => setActiveStep(2)}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveStep(2);
+                  }}
                   className="text-xs font-semibold text-amazon-link hover:underline"
                 >
-                  Change
+                  {activeStep > 2 ? "Change" : "Select Payment"}
                 </button>
               )}
             </div>
@@ -395,15 +402,24 @@ export default function CheckoutPage() {
                       <div className="relative">
                         <label className="text-xs font-bold text-gray-700 flex items-center gap-1 mb-1">
                           <span>CVV</span>
-                          <HelpCircle
-                            className="h-3.5 w-3.5 text-gray-500 cursor-pointer"
-                            onMouseEnter={() => setShowCvvTooltip(true)}
-                            onMouseLeave={() => {
-                              if (!UI_CONFIG.persistHelpTooltipOnLeave) {
-                                setShowCvvTooltip(false);
-                              }
-                            }}
-                          />
+                          <span className="relative inline-flex items-center">
+                            <HelpCircle
+                              className="h-3.5 w-3.5 text-gray-500 hover:text-gray-800 cursor-pointer"
+                              onMouseEnter={() => setShowCvvTooltip(true)}
+                              onClick={() => setShowCvvTooltip(true)}
+                              onMouseLeave={() => {
+                                if (!UI_CONFIG.persistHelpTooltipOnLeave) {
+                                  setShowCvvTooltip(false);
+                                }
+                              }}
+                            />
+                            {showCvvTooltip && (
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-gray-900 text-white text-[11px] p-2.5 rounded shadow-xl z-30 pointer-events-auto leading-normal">
+                                The 3- or 4-digit code on the back of your credit/debit card.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                              </div>
+                            )}
+                          </span>
                         </label>
 
                         <input
@@ -414,12 +430,6 @@ export default function CheckoutPage() {
                           placeholder="123"
                           className="w-full rounded border border-gray-300 px-3 py-1.5 text-xs font-mono focus:border-amazon-orange focus:outline-none bg-white"
                         />
-
-                        {showCvvTooltip && (
-                          <div className="absolute top-full left-0 mt-1 w-52 bg-gray-900 text-white text-[11px] p-2.5 rounded shadow-xl z-30">
-                            The 3- or 4-digit code on the back of your credit/debit card.
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

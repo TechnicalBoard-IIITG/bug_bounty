@@ -128,6 +128,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
           {/* Star breakdown bars */}
           <div className="space-y-2 pt-2">
+            <p className="text-[11px] text-gray-500 font-medium">Click a star rating to filter reviews:</p>
             {[5, 4, 3, 2, 1].map((stars) => {
               const percentages: Record<number, number> = {
                 5: 72,
@@ -190,6 +191,29 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
         {/* Right Column: Review Cards */}
         <div className="md:col-span-2 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 pb-3">
+            <h4 className="font-bold text-sm text-gray-900">
+              Customer Reviews ({reviews.length})
+            </h4>
+            <div className="flex items-center gap-2 text-xs">
+              <label className="text-gray-600 font-medium whitespace-nowrap">Filter by rating:</label>
+              <select
+                value={selectedStarFilter === null ? "all" : String(selectedStarFilter)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedStarFilter(val === "all" ? null : Number(val));
+                }}
+                className="bg-gray-50 border border-gray-300 rounded px-2.5 py-1 text-xs font-semibold text-gray-800 focus:outline-none focus:border-amazon-orange cursor-pointer"
+              >
+                <option value="all">All Stars</option>
+                <option value="5">5 Star only</option>
+                <option value="4">4 Star only</option>
+                <option value="3">3 Star only</option>
+                <option value="2">2 Star only</option>
+                <option value="1">1 Star only</option>
+              </select>
+            </div>
+          </div>
           {filteredReviews.length === 0 ? (
             <p className="text-xs text-gray-500 py-4">No reviews match the selected filter.</p>
           ) : (
