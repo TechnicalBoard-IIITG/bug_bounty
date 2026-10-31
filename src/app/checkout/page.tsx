@@ -12,6 +12,7 @@ import {
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
+import { isDefectActive } from "@/config/defects.config";
 import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export default function CheckoutPage() {
@@ -57,7 +58,10 @@ export default function CheckoutPage() {
 
   const TAX_RATE = 0.08;
   const taxableBase = Math.floor(subtotal);
-  const tax = Number((taxableBase * TAX_RATE).toFixed(2));
+  const rawTax = Number((taxableBase * TAX_RATE).toFixed(2));
+  // MED_10: Negative Tax Calculation (decreases price instead of increasing)
+  const isNegativeTax = isDefectActive("MED_10_NEGATIVE_TAX_CALCULATION") || isDefectActive("MED_10_POST_DISCOUNT_TAX_CALCULATION");
+  const tax = isNegativeTax ? -rawTax : rawTax;
   const shippingFee = 0;
   const finalTotal = Math.max(0, subtotal - discount + tax + shippingFee);
 
@@ -543,9 +547,10 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between text-gray-700">
               <span>Estimated Tax (8%):</span>
-              <span>
-                {displayCurrencySymbol}
-                {tax.toFixed(2)}
+              <span className={tax < 0 ? "text-green-700 font-semibold" : ""}>
+                {tax < 0
+                  ? `-${displayCurrencySymbol}${Math.abs(tax).toFixed(2)}`
+                  : `${displayCurrencySymbol}${tax.toFixed(2)}`}
               </span>
             </div>
 

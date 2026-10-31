@@ -79,7 +79,11 @@ export async function POST(req: NextRequest) {
       taxableBase = Math.floor(taxableBase);
     }
 
-    const calculatedTax = Number((taxableBase * 0.08).toFixed(2));
+    let calculatedTax = Number((taxableBase * 0.08).toFixed(2));
+    // MED_10: Negative Tax Calculation (decreases price instead of increasing)
+    if (isDefectActive("MED_10_NEGATIVE_TAX_CALCULATION") || isDefectActive("MED_10_POST_DISCOUNT_TAX_CALCULATION")) {
+      calculatedTax = -calculatedTax;
+    }
     const finalTotal = Math.max(0, calculatedSubtotal - Number(discount) + calculatedTax + Number(shippingFee));
     const orderNumber = `112-${Math.floor(1000000 + Math.random() * 9000000)}-${Math.floor(1000000 + Math.random() * 9000000)}`;
 
