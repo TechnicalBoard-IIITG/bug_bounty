@@ -67,14 +67,29 @@ export default function OrdersPage() {
           }
         } catch {}
 
-        if (allOrders.length > 0) {
-          setOrders(allOrders);
-        } else {
-          setOrders(DEMO_ORDERS);
-        }
+        let finalOrders = allOrders.length > 0 ? allOrders : [...DEMO_ORDERS];
+
+        // Apply persisted cancellations from localStorage so cancelled orders persist across page reloads
+        try {
+          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          finalOrders = finalOrders.map((o: any) => {
+            const key = o.orderNumber || o.id;
+            return cancelledMap[key] ? { ...o, status: cancelledMap[key] } : o;
+          });
+        } catch {}
+
+        setOrders(finalOrders);
       })
       .catch(() => {
-        setOrders(DEMO_ORDERS);
+        let finalOrders = [...DEMO_ORDERS];
+        try {
+          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          finalOrders = finalOrders.map((o: any) => {
+            const key = o.orderNumber || o.id;
+            return cancelledMap[key] ? { ...o, status: cancelledMap[key] } : o;
+          });
+        } catch {}
+        setOrders(finalOrders);
       })
       .finally(() => setIsLoading(false));
   };
@@ -100,6 +115,19 @@ export default function OrdersPage() {
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: "Cancelled" } : o))
         );
+
+        // Persist cancellation so navigating back or refreshing never resets back to Delivered
+        try {
+          const guestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
+          const updatedGuestOrders = guestOrders.map((o: any) =>
+            o.id === orderId || o.orderNumber === orderId ? { ...o, status: "Cancelled" } : o
+          );
+          localStorage.setItem("entropy_guest_orders", JSON.stringify(updatedGuestOrders));
+
+          const cancelledMap = JSON.parse(localStorage.getItem("entropy_cancelled_orders") || "{}");
+          cancelledMap[orderId] = "Cancelled";
+          localStorage.setItem("entropy_cancelled_orders", JSON.stringify(cancelledMap));
+        } catch {}
       } else {
         alert(data.error || "Order cancellation failed.");
       }

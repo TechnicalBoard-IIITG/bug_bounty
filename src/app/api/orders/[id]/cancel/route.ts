@@ -12,21 +12,17 @@ export async function POST(
   try {
     const { id } = params;
 
-    let order: any = null;
-    try {
-      order = await prisma.order.findFirst({
-        where: {
-          OR: [{ id }, { orderNumber: id }],
-        },
-      });
-    } catch {
-      // Fallback
-    }
+    let order: any = findInMemoryOrder(id);
 
     if (!order) {
-      const memOrder = findInMemoryOrder(id);
-      if (memOrder) {
-        order = memOrder;
+      try {
+        order = await prisma.order.findFirst({
+          where: {
+            OR: [{ id }, { orderNumber: id }],
+          },
+        });
+      } catch {
+        // Fallback
       }
     }
 
@@ -44,13 +40,21 @@ export async function POST(
       }
     }
 
+    const updatedMem = updateInMemoryOrderStatus(id, "Cancelled");
+    if (updatedMem) {
+      return NextResponse.json({
+        success: true,
+        message: `Order #${updatedMem.orderNumber} status changed from "${currentStatus}" to "Cancelled".`,
+        order: updatedMem,
+      });
+    }
+
     try {
       if (order?.id) {
         const updated = await prisma.order.update({
           where: { id: order.id },
           data: { status: "Cancelled" },
         });
-        updateInMemoryOrderStatus(id, "Cancelled");
         return NextResponse.json({
           success: true,
           message: `Order #${updated.orderNumber} status changed from "${currentStatus}" to "Cancelled".`,
@@ -61,11 +65,10 @@ export async function POST(
       // In-memory fallback
     }
 
-    const updatedMem = updateInMemoryOrderStatus(id, "Cancelled");
     return NextResponse.json({
       success: true,
       message: `Order #${id} status changed from "${currentStatus}" to "Cancelled".`,
-      order: updatedMem || {
+      order: {
         id,
         orderNumber: id,
         status: "Cancelled",

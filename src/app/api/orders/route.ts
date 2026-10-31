@@ -134,6 +134,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
 
+    const memOrders = getInMemoryOrders(userId);
+    if (memOrders && memOrders.length > 0) {
+      return NextResponse.json({ orders: memOrders });
+    }
+
     try {
       const whereClause = userId && userId !== "guest"
         ? { userId }
@@ -146,8 +151,7 @@ export async function GET(req: NextRequest) {
       });
       return NextResponse.json({ orders });
     } catch {
-      const matched = getInMemoryOrders(userId);
-      return NextResponse.json({ orders: matched });
+      return NextResponse.json({ orders: memOrders });
     }
   } catch (error) {
     console.error("Orders GET error:", error);
