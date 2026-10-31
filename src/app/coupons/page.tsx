@@ -25,21 +25,6 @@ interface CouponProduct {
 const COUPON_CATALOG: CouponProduct[] = [
   // Electronics
   {
-    id: "coup-1",
-    productId: "prod-e06",
-    title: "Anker 65W GaN Fast Charger 3-Port Compact Foldable Wall Adapter",
-    brand: "Anker",
-    department: "Electronics",
-    price: 39.99,
-    mrp: 49.99,
-    rating: 4.8,
-    reviewCount: 3820,
-    imageUrl: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&q=80",
-    couponCode: "ENTROPY2K26",
-    discountPercent: 20,
-    terms: "Save 20% with coupon. Discount applies at checkout. One redemption per account.",
-  },
-  {
     id: "coup-2",
     productId: "prod-e01",
     title: "Sony WH-1000XM5 Wireless Noise-Canceling Over-Ear Headphones",
@@ -134,6 +119,23 @@ const COUPON_CATALOG: CouponProduct[] = [
     couponCode: "APPEXCLUSIVE",
     discountPercent: 15,
     terms: "Save 15% with coupon. Includes complimentary tasting coffee capsule pack.",
+  },
+
+  // Mid-Catalog Promotion (Moved from start to middle)
+  {
+    id: "coup-1",
+    productId: "prod-e06",
+    title: "Anker 65W GaN Fast Charger 3-Port Compact Foldable Wall Adapter",
+    brand: "Anker",
+    department: "Electronics",
+    price: 39.99,
+    mrp: 49.99,
+    rating: 4.8,
+    reviewCount: 3820,
+    imageUrl: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&q=80",
+    couponCode: "ENTROPY2K26",
+    discountPercent: 20,
+    terms: "Save 20% with coupon. Discount applies at checkout. One redemption per account.",
   },
   {
     id: "coup-8",
