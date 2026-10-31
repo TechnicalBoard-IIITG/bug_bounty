@@ -139,21 +139,27 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
 
     const memOrders = getInMemoryOrders(userId);
-    if (memOrders && memOrders.length > 0) {
+
+    // If requesting as guest / unauthenticated: return isolated demo orders immediately
+    if (!userId || userId === "guest") {
       return NextResponse.json({ orders: memOrders });
     }
 
     try {
-      const whereClause = userId && userId !== "guest"
-        ? { userId }
-        : { OR: [{ userId: "guest" }, { orderNumber: "112-8492041-5928310" }] };
-
-      const orders = await prisma.order.findMany({
-        where: whereClause,
+      // For authenticated user: query database for this specific userId ONLY
+      const dbOrders = await prisma.order.findMany({
+        where: { userId },
         include: { items: true },
         orderBy: { createdAt: "desc" },
       });
-      return NextResponse.json({ orders });
+
+      if (dbOrders && dbOrders.length > 0) {
+        const seen = new Set(dbOrders.map((o) => o.orderNumber || o.id));
+        const unmergedMem = memOrders.filter((m) => !seen.has(m.orderNumber || m.id));
+        return NextResponse.json({ orders: [...dbOrders, ...unmergedMem] });
+      }
+
+      return NextResponse.json({ orders: memOrders });
     } catch {
       return NextResponse.json({ orders: memOrders });
     }

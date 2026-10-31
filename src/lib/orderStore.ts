@@ -57,14 +57,16 @@ export const DEFAULT_DEMO_ORDERS: InMemoryOrder[] = [
   },
 ];
 
-const memoryOrders: InMemoryOrder[] = JSON.parse(JSON.stringify(DEFAULT_DEMO_ORDERS));
+const memoryOrders: InMemoryOrder[] = [];
 
 export function addInMemoryOrder(order: InMemoryOrder): void {
   memoryOrders.unshift(order);
 }
 
 export function findInMemoryOrder(idOrOrderNumber: string): InMemoryOrder | undefined {
-  return memoryOrders.find((o) => o.id === idOrOrderNumber || o.orderNumber === idOrOrderNumber);
+  const inMem = memoryOrders.find((o) => o.id === idOrOrderNumber || o.orderNumber === idOrOrderNumber);
+  if (inMem) return inMem;
+  return DEFAULT_DEMO_ORDERS.find((o) => o.id === idOrOrderNumber || o.orderNumber === idOrOrderNumber);
 }
 
 export function updateInMemoryOrderStatus(idOrOrderNumber: string, status: string): InMemoryOrder | null {
@@ -73,17 +75,30 @@ export function updateInMemoryOrderStatus(idOrOrderNumber: string, status: strin
     ord.status = status;
     return ord;
   }
+  const demoOrd = DEFAULT_DEMO_ORDERS.find((o) => o.id === idOrOrderNumber || o.orderNumber === idOrOrderNumber);
+  if (demoOrd) {
+    demoOrd.status = status;
+    return demoOrd;
+  }
   return null;
 }
 
 export function getInMemoryOrders(userId?: string | null): InMemoryOrder[] {
+  // Complete User Isolation:
+  // Baseline demo orders are included for contest cancellation testing (HARD-10)
+  const demoOrders = DEFAULT_DEMO_ORDERS;
+
+  // 1. Guest / Unauthenticated users: ONLY see baseline demo orders.
+  // Real orders placed by other users or other sessions are NEVER leaked.
   if (!userId || userId === "guest") {
-    return memoryOrders;
+    return [...demoOrders];
   }
-  return memoryOrders.filter((o) => o.userId === userId || o.userId === "guest");
+
+  // 2. Authenticated users: ONLY see orders matching their own specific userId + baseline demo orders.
+  const userOrders = memoryOrders.filter((o) => o.userId === userId);
+  return [...userOrders, ...demoOrders];
 }
 
 export function resetInMemoryOrders(): void {
   memoryOrders.length = 0;
-  memoryOrders.push(...JSON.parse(JSON.stringify(DEFAULT_DEMO_ORDERS)));
 }

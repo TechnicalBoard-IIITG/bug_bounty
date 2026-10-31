@@ -51,23 +51,28 @@ export default function OrdersPage() {
 
   const fetchOrders = () => {
     setIsLoading(true);
-    fetch(`/api/orders?userId=${user?.id || ""}`)
+    const userIdParam = user?.id ? `?userId=${encodeURIComponent(user.id)}` : "?userId=guest";
+    fetch(`/api/orders${userIdParam}`)
       .then((res) => res.json())
       .then((data) => {
-        let allOrders = data.orders && data.orders.length > 0 ? [...data.orders] : [];
-        try {
-          const localGuestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
-          const seen = new Set(allOrders.map((o: any) => o.orderNumber || o.id));
-          for (const lo of localGuestOrders) {
-            const key = lo.orderNumber || lo.id;
-            if (!seen.has(key)) {
-              allOrders.unshift(lo);
-              seen.add(key);
-            }
-          }
-        } catch {}
+        let allOrders = data.orders && data.orders.length > 0 ? [...data.orders] : [...DEMO_ORDERS];
 
-        let finalOrders = allOrders.length > 0 ? allOrders : [...DEMO_ORDERS];
+        // Only attach guest orders if the user is currently browsing as a guest (not logged into an account)
+        if (!user) {
+          try {
+            const localGuestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
+            const seen = new Set(allOrders.map((o: any) => o.orderNumber || o.id));
+            for (const lo of localGuestOrders) {
+              const key = lo.orderNumber || lo.id;
+              if (!seen.has(key)) {
+                allOrders.unshift(lo);
+                seen.add(key);
+              }
+            }
+          } catch {}
+        }
+
+        let finalOrders = allOrders;
 
         // Apply persisted cancellations from localStorage so cancelled orders persist across page reloads
         try {

@@ -158,11 +158,13 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (data.success && data.order) {
         clearCart();
-        try {
-          const guestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
-          guestOrders.unshift(data.order);
-          localStorage.setItem("entropy_guest_orders", JSON.stringify(guestOrders));
-        } catch {}
+        if (!user) {
+          try {
+            const guestOrders = JSON.parse(localStorage.getItem("entropy_guest_orders") || "[]");
+            guestOrders.unshift(data.order);
+            localStorage.setItem("entropy_guest_orders", JSON.stringify(guestOrders));
+          } catch {}
+        }
         router.push(`/orders/${data.order.id || data.order.orderNumber}/summary`);
       } else {
         alert("Failed to place order. Please review your details.");
