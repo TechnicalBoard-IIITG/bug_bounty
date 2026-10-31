@@ -27,6 +27,13 @@ export const SubNav: React.FC = () => {
           <span>Today&apos;s Deals</span>
         </Link>
 
+        <Link
+          href="/coupons"
+          className="px-2 py-1 border border-transparent hover:border-white rounded hover:underline transition shrink-0 whitespace-nowrap font-medium"
+        >
+          Coupons
+        </Link>
+
         {DEPARTMENTS.map((dept) => (
           <Link
             key={dept}

@@ -20,22 +20,22 @@ export async function POST(req: NextRequest) {
       { discountPercent: number; flatDiscount: number; isTreasure?: boolean; treasureCode?: string }
     > = {
       // 4 Deals Page Festive Offers
-      DIWALI50: { discountPercent: 0, flatDiscount: 50 },
+      DIWALI50: { discountPercent: 50, flatDiscount: 0 },
       FESTIVE20: { discountPercent: 20, flatDiscount: 0 },
       MEGA25: { discountPercent: 25, flatDiscount: 0 },
-      SUPERDEAL: { discountPercent: 0, flatDiscount: 75 },
+      SUPERDEAL: { discountPercent: 35, flatDiscount: 0 },
 
       // 3 Product Page Bank & Payment Offers
       SAVE10: { discountPercent: 10, flatDiscount: 0 },
       CASHBACK15: { discountPercent: 15, flatDiscount: 0 },
-      PRIME100: { discountPercent: 0, flatDiscount: 100 },
+      PRIME100: { discountPercent: 40, flatDiscount: 0 },
 
       // 5 Homepage Category Promos
       WELCOME10: { discountPercent: 10, flatDiscount: 0 },
       welcome10: { discountPercent: 10, flatDiscount: 0 }, // For HARD_14 defect testing
       HOLIDAY30: { discountPercent: 30, flatDiscount: 0 },
-      APPEXCLUSIVE: { discountPercent: 10, flatDiscount: 0 },
-      FLAT50: { discountPercent: 0, flatDiscount: 50 },
+      APPEXCLUSIVE: { discountPercent: 15, flatDiscount: 0 },
+      FLAT50: { discountPercent: 50, flatDiscount: 0 },
 
       // 12th Secret Sponsor Promo
       ENTROPY2K26: {

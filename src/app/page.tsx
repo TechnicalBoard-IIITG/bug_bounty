@@ -120,58 +120,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Merchant & Campus Partner Coupon Codes Banner */}
-        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-lg p-5 shadow-sm border border-blue-800">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-blue-800/80 pb-3">
-            <div>
-              <span className="text-[10px] font-bold tracking-widest uppercase text-amazon-yellow">
-                Verified Merchant Codes &bull; Limited Period
-              </span>
-              <h3 className="text-base sm:text-lg font-bold text-white">
-                Partner Discounts &amp; Campus TechFest Promos
-              </h3>
-            </div>
-            <span className="text-xs text-blue-200">Apply any valid coupon at checkout</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {/* 1: WELCOME10 */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded p-3 text-center hover:bg-white/15 transition">
-              <span className="text-[10px] text-blue-200 block uppercase font-medium">New Shopper Welcome</span>
-              <code className="text-xs font-bold text-yellow-300 tracking-wider">WELCOME10</code>
-              <span className="text-[10px] text-green-300 block mt-1 font-semibold">10% Off First Order</span>
-            </div>
-
-            {/* 2: HOLIDAY30 */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded p-3 text-center hover:bg-white/15 transition">
-              <span className="text-[10px] text-blue-200 block uppercase font-medium">Holiday Bonanza</span>
-              <code className="text-xs font-bold text-yellow-300 tracking-wider">HOLIDAY30</code>
-              <span className="text-[10px] text-green-300 block mt-1 font-semibold">30% Off Home &amp; Fashion</span>
-            </div>
-
-            {/* 3: APPEXCLUSIVE */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded p-3 text-center hover:bg-white/15 transition">
-              <span className="text-[10px] text-blue-200 block uppercase font-medium">App &amp; Web Exclusive</span>
-              <code className="text-xs font-bold text-yellow-300 tracking-wider">APPEXCLUSIVE</code>
-              <span className="text-[10px] text-green-300 block mt-1 font-semibold">Flat ₹25 Instant OFF</span>
-            </div>
-
-            {/* 4: FLAT50 */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded p-3 text-center hover:bg-white/15 transition">
-              <span className="text-[10px] text-blue-200 block uppercase font-medium">Super Value Pass</span>
-              <code className="text-xs font-bold text-yellow-300 tracking-wider">FLAT50</code>
-              <span className="text-[10px] text-green-300 block mt-1 font-semibold">Flat ₹50 Savings</span>
-            </div>
-
-            {/* 5: ENTROPY2K26 (Campus Partner Promo) */}
-            <div className="bg-white/10 backdrop-blur-sm border border-yellow-400/40 rounded p-3 text-center hover:bg-white/15 transition">
-              <span className="text-[10px] text-yellow-300 block uppercase font-medium">Campus TechFest Partner</span>
-              <code className="text-xs font-bold text-yellow-300 tracking-wider">ENTROPY2K26</code>
-              <span className="text-[10px] text-green-300 block mt-1 font-semibold">20% Campus Discount</span>
-            </div>
-          </div>
-        </div>
-
         {/* Today's Deals Rail */}
         {deals.length > 0 && (
           <section className="bg-white p-6 rounded-md shadow-sm border border-gray-200">

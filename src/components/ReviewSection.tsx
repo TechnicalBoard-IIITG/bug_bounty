@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Star, ThumbsUp, CheckCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { UI_CONFIG } from "@/lib/uiDefects";
+import { getMockReviewsForProduct } from "@/lib/mockReviews";
 
 export interface ReviewItem {
   id: string;
@@ -32,7 +33,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   initialReviews,
 }) => {
   const { user } = useAuth();
-  const [reviews, setReviews] = useState<ReviewItem[]>(initialReviews);
+  const defaultMock = getMockReviewsForProduct(productId, productTitle);
+  const effectiveInitial = initialReviews && initialReviews.length >= 12 
+    ? initialReviews 
+    : [...(initialReviews || []), ...defaultMock.slice((initialReviews || []).length)];
+
+  const [reviews, setReviews] = useState<ReviewItem[]>(effectiveInitial);
   const [selectedStarFilter, setSelectedStarFilter] = useState<number | null>(null);
 
   // Fetch reviews on mount so newly added reviews persist across page refreshes
@@ -42,7 +48,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
       .then((data) => {
         if (data.reviews && data.reviews.length > 0) {
           const existingIds = new Set(data.reviews.map((r: any) => r.id));
-          const unmergedInitial = initialReviews.filter((ir) => !existingIds.has(ir.id));
+          const unmergedInitial = effectiveInitial.filter((ir) => !existingIds.has(ir.id));
           setReviews([...data.reviews, ...unmergedInitial]);
         }
       })
