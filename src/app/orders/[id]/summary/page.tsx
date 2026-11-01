@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Package, ArrowRight, Printer } from "lucide-react";
+import { CheckCircle2, Package, ArrowRight, Printer, Sparkles } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
+import { TreasureCelebrationModal } from "@/components/TreasureCelebrationModal";
 
 export default function OrderSummaryPage() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function OrderSummaryPage() {
 
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBulkTreasureOpen, setIsBulkTreasureOpen] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -22,6 +24,12 @@ export default function OrderSummaryPage() {
       .then((data) => {
         if (data.order) {
           setOrder(data.order);
+          const hasBulk =
+            (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("bulk") === "true") ||
+            Boolean(data.order?.items?.some((it: any) => Number(it.quantity) > 20));
+          if (hasBulk) {
+            setIsBulkTreasureOpen(true);
+          }
         }
       })
       .catch((err) => console.error("Order fetch error:", err))
@@ -48,6 +56,10 @@ export default function OrderSummaryPage() {
     },
   ];
 
+  const isBulkOrder =
+    (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("bulk") === "true") ||
+    Boolean(items.some((it: any) => Number(it.quantity) > 20));
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 text-amazon-text space-y-6">
       {/* Thank you hero banner */}
@@ -65,6 +77,26 @@ export default function OrderSummaryPage() {
           </div>
         </div>
       </div>
+
+      {/* Secret Bulk Wholesale Treasure Alert Banner */}
+      {isBulkOrder && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-lg p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-amber-950 shadow-sm animate-in fade-in">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="flex items-center gap-2 justify-center sm:justify-start text-amber-900">
+              <Sparkles className="w-5 h-5 text-amber-600 animate-pulse" />
+              <span className="text-sm font-extrabold uppercase tracking-wide">
+                Secret Bulk Wholesale Treasure Unlocked!
+              </span>
+            </div>
+            <p className="text-amber-800 text-xs">
+              You ordered more than 20 items of a single product! Claim your 10 points in the submission portal:
+            </p>
+          </div>
+          <div className="font-mono font-black text-sm bg-white px-4 py-2 rounded-md border border-amber-300 text-amber-900 tracking-wider shadow-xs select-all">
+            TREASURE-EXPENSIVE-BUG
+          </div>
+        </div>
+      )}
 
       {/* Delivery Estimate Box */}
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 space-y-4">
@@ -144,6 +176,14 @@ export default function OrderSummaryPage() {
           </p>
         </div>
       </div>
+
+      <TreasureCelebrationModal
+        isOpen={isBulkTreasureOpen}
+        onClose={() => setIsBulkTreasureOpen(false)}
+        title="EXPENSIVE WHOLESALE ORDER DETECTED!"
+        subtitle="You ordered more than 20 items of a single product! You unlocked the bulk purchasing treasure bug!"
+        treasureCode="TREASURE-EXPENSIVE-BUG"
+      />
     </div>
   );
 }

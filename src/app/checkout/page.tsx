@@ -175,7 +175,8 @@ export default function CheckoutPage() {
             localStorage.setItem("entropy_guest_orders", JSON.stringify(guestOrders));
           } catch {}
         }
-        router.push(`/orders/${data.order.id || data.order.orderNumber}/summary`);
+        const hasBulkItem = items.some((i) => i.quantity > 20);
+        router.push(`/orders/${data.order.id || data.order.orderNumber}/summary${hasBulkItem ? "?bulk=true" : ""}`);
       } else {
         alert("Failed to place order. Please review your details.");
       }
